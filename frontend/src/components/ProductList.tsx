@@ -1,7 +1,7 @@
-import axios from 'axios';
 import { Edit, Package, Plus, Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import axios from '../api';
 
 interface Product {
     id: number;

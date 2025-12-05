@@ -1,14 +1,18 @@
 import { Router } from 'express';
 import { query } from '../db';
+import { requireAuth } from '../middleware/auth';
 import { buildECFXML } from '../services/xmlService';
 import { logger } from '../utils/logger';
 
 const router = Router();
 
+// Protect all routes
+router.use(requireAuth);
+
 // GET /api/invoices
 router.get('/', async (req, res) => {
   try {
-    const result = await query('SELECT * FROM invoices ORDER BY created_at DESC');
+    const result = await query('SELECT * FROM invoices WHERE tenant_id = $1 ORDER BY created_at DESC', [req.tenantId]);
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: 'Database error' });
@@ -26,8 +30,8 @@ router.post('/', async (req, res) => {
     
     // Insert invoice
     const invRes = await query(
-      'INSERT INTO invoices (client_id, net_total, tax_total, total) VALUES ($1, $2, $3, $4) RETURNING id',
-      [client_id, 0, 0, 0]
+      'INSERT INTO invoices (tenant_id, client_id, net_total, tax_total, total) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+      [req.tenantId, client_id, 0, 0, 0]
     );
     const invoiceId = invRes.rows[0].id;
 
@@ -40,7 +44,9 @@ router.post('/', async (req, res) => {
       
       // Verify product existence to avoid FK violations with stale frontend data
       let productId = item.product_id;
-      if (productId) {
+      if (productId === 0 || productId === '0') {
+          productId = null;
+      } else if (productId) {
          const prodCheck = await query('SELECT id FROM products WHERE id = $1', [productId]);
          if (prodCheck.rows.length === 0) {
              productId = null;
@@ -48,8 +54,8 @@ router.post('/', async (req, res) => {
       }
       
       await query(
-        'INSERT INTO invoice_items (invoice_id, product_id, quantity, unit_price, line_amount, line_tax) VALUES ($1, $2, $3, $4, $5, $6)',
-        [invoiceId, productId, item.quantity, item.unit_price, lineAmount, lineTax]
+        'INSERT INTO invoice_items (tenant_id, invoice_id, product_id, quantity, unit_price, line_amount, line_tax) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+        [req.tenantId, invoiceId, productId, item.quantity, item.unit_price, lineAmount, lineTax]
       );
     }
     
@@ -57,7 +63,7 @@ router.post('/', async (req, res) => {
     await query('UPDATE invoices SET net_total=$1, tax_total=$2, total=$3 WHERE id=$4', [net_total, tax_total, total, invoiceId]);
     
     await query('COMMIT');
-    logger.info(`Invoice created`, { invoiceId, total });
+    logger.info(`Invoice created`, { invoiceId, total, tenantId: req.tenantId });
     res.json({ id: invoiceId, status: 'draft' });
   } catch (err) {
     await query('ROLLBACK');
@@ -79,9 +85,13 @@ router.post('/:id/sign', async (req, res) => {
     const clientRes = await query('SELECT * FROM clients WHERE id = $1', [invoice.client_id]);
     const itemsRes = await query('SELECT * FROM invoice_items WHERE invoice_id = $1', [id]);
     
+    // Load company config
+    const { getCompanyConfig } = require('../services/configService');
+    const config = await getCompanyConfig();
+
     // Build data object for XML
     const xmlData = {
-      emisor: { rnc: '131231231', nombre: 'STON BLUE JEANS' }, // Should come from config
+      emisor: { rnc: config.company_rnc, nombre: config.company_name },
       receptor: { rnc: clientRes.rows[0].rnc_ci, nombre: clientRes.rows[0].name },
       fecha: new Date().toISOString(),
       tipo: '31', // Example
@@ -101,13 +111,8 @@ router.post('/:id/sign', async (req, res) => {
     const xml = buildECFXML(xmlData as any); // Cast for now
     
     // Sign
-    // Load cert from secure path
-    const path = require('path');
     const { loadP12, signXml } = require('../services/signatureService');
-    const certPath = path.join(__dirname, '../../certs/test-cert.p12');
-    
-    // In production, password should come from env/vault
-    const { privateKeyPem, certPem } = loadP12(certPath, 'password');
+    const { privateKeyPem, certPem } = loadP12(config.certificate_path, config.certificate_password);
     const signedXml = signXml(xml, privateKeyPem, certPem);
     
     // Save XML (optional, maybe save to DB or S3)
@@ -130,8 +135,10 @@ router.post('/:id/sign', async (req, res) => {
 router.get('/:id/xml', async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await query('SELECT xml_path FROM invoices WHERE id = $1', [id]);
+    const result = await query('SELECT xml_path FROM invoices WHERE id = $1 AND tenant_id = $2', [id, req.tenantId]);
     
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Invoice not found' });
+
     const xmlContent = result.rows[0].xml_path;
     
     if (!xmlContent || xmlContent === 'stored_in_db') {
@@ -148,6 +155,39 @@ router.get('/:id/xml', async (req, res) => {
     res.send(xmlContent);
   } catch (err) {
     res.status(500).json({ error: 'Error fetching XML' });
+  }
+});
+
+// POST /api/invoices/:id/send
+router.post('/:id/send', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const invRes = await query('SELECT * FROM invoices WHERE id = $1 AND tenant_id = $2', [id, req.tenantId]);
+    if (invRes.rows.length === 0) return res.status(404).json({ error: 'Invoice not found' });
+    
+    const invoice = invRes.rows[0];
+    if (invoice.status !== 'signed') {
+       return res.status(400).json({ error: 'Invoice must be signed before sending' });
+    }
+    
+    // Get XML content
+    const xmlContent = invoice.xml_path;
+    
+    if (!xmlContent || !xmlContent.startsWith('<')) {
+        return res.status(400).json({ error: 'Invalid or missing XML content' });
+    }
+
+    // Send to DGII
+    const { sendToDGII } = require('../services/dgiiService');
+    const response = await sendToDGII(xmlContent, req.tenantId);
+    
+    // Update status
+    await query('UPDATE invoices SET status=$1 WHERE id=$2 AND tenant_id=$3', ['sent', id, req.tenantId]);
+    
+    res.json({ message: 'Sent to DGII successfully', trackId: response.trackId || response });
+  } catch (err: any) {
+    console.error(err);
+    res.status(500).json({ error: 'Error sending to DGII: ' + err.message });
   }
 });
 

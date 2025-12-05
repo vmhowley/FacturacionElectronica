@@ -1,6 +1,6 @@
-import axios from 'axios';
-import { CheckCircle, FileText } from 'lucide-react';
+import { CheckCircle, FileText, Send } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import axios from '../api';
 
 interface Invoice {
     id: number;
@@ -32,6 +32,20 @@ export const InvoiceList: React.FC = () => {
             fetchInvoices();
         } catch (err) {
             alert('Error signing invoice');
+        }
+    };
+
+    const sendToDGII = async (id: number) => {
+        try {
+            const conf = window.confirm('¿Estás seguro de enviar esta factura a la DGII?');
+            if (!conf) return;
+
+            await axios.post(`http://localhost:3000/api/invoices/${id}/send`);
+            alert('Factura enviada correctamente');
+            fetchInvoices();
+        } catch (err: any) {
+            console.error(err);
+            alert('Error al enviar: ' + (err.response?.data?.error || 'Error desconocido'));
         }
     };
 
@@ -81,14 +95,16 @@ export const InvoiceList: React.FC = () => {
                                         <span className="font-semibold text-gray-900">RD$ {parseFloat(inv.total).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</span>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${inv.status === 'signed'
-                                            ? 'bg-green-50 text-green-700 border-green-200'
-                                            : inv.status === 'draft'
-                                                ? 'bg-gray-100 text-gray-700 border-gray-200'
-                                                : 'bg-orange-50 text-orange-700 border-orange-200'
+                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${inv.status === 'sent'
+                                            ? 'bg-purple-50 text-purple-700 border-purple-200'
+                                            : inv.status === 'signed'
+                                                ? 'bg-green-50 text-green-700 border-green-200'
+                                                : inv.status === 'draft'
+                                                    ? 'bg-gray-100 text-gray-700 border-gray-200'
+                                                    : 'bg-orange-50 text-orange-700 border-orange-200'
                                             }`}>
-                                            {inv.status === 'signed' ? <CheckCircle size={12} /> : <div className="w-1.5 h-1.5 rounded-full bg-current" />}
-                                            {inv.status.charAt(0).toUpperCase() + inv.status.slice(1)}
+                                            {inv.status === 'sent' ? <Send size={12} /> : inv.status === 'signed' ? <CheckCircle size={12} /> : <div className="w-1.5 h-1.5 rounded-full bg-current" />}
+                                            {inv.status === 'sent' ? 'Enviada' : inv.status.charAt(0).toUpperCase() + inv.status.slice(1)}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-right">
@@ -101,14 +117,25 @@ export const InvoiceList: React.FC = () => {
                                             </button>
                                         )}
                                         {inv.status === 'signed' && (
-                                            <a
-                                                href={`http://localhost:3000/api/invoices/${inv.id}/xml`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors inline-block"
-                                            >
-                                                Ver XML
-                                            </a>
+                                            <div className="flex items-center justify-end gap-2">
+                                                <a
+                                                    href={`http://localhost:3000/api/invoices/${inv.id}/xml`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-sm font-medium text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                                                >
+                                                    XML
+                                                </a>
+                                                <button
+                                                    onClick={() => sendToDGII(inv.id)}
+                                                    className="flex items-center gap-1 text-sm font-medium text-purple-600 hover:text-purple-800 hover:bg-purple-50 px-3 py-1.5 rounded-lg transition-colors"
+                                                >
+                                                    <Send size={14} /> Enviar
+                                                </button>
+                                            </div>
+                                        )}
+                                        {inv.status === 'sent' && (
+                                            <span className="text-sm text-gray-400 font-medium px-3">Enviada</span>
                                         )}
                                     </td>
                                 </tr>

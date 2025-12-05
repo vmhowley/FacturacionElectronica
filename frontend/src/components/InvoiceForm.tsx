@@ -1,8 +1,8 @@
-import axios from 'axios';
 import { Plus, Save, Trash2 } from 'lucide-react';
 import React from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
+import axios from '../api';
 
 interface InvoiceItem {
     product_id: number; // Simplified for now, would be a select in real app

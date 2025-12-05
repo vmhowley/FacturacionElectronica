@@ -1,8 +1,8 @@
-import axios from 'axios';
 import { ArrowLeft, Save } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import axios from '../api';
 
 interface ClientFormData {
     name: string;

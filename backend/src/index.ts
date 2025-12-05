@@ -14,9 +14,12 @@ import productRoutes from './routes/products';
 app.use(cors());
 app.use(express.json());
 
+import adminRoutes from './routes/admin';
+
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/clients', clientRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get('/', (req, res) => {
   res.send('Facturación Electrónica API is running');

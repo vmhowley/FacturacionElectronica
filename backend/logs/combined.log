@@ -11,3 +11,11 @@
 {"error":{"code":"23503","constraint":"invoice_items_product_id_fkey","detail":"Key (product_id)=(1) is not present in table \"products\".","file":"ri_triggers.c","length":286,"line":"2599","name":"error","routine":"ri_ReportViolation","schema":"public","severity":"ERROR","table":"invoice_items"},"level":"error","message":"Error creating invoice","timestamp":"2025-12-05T15:00:36.616Z"}
 {"invoiceId":5,"level":"info","message":"Invoice created","timestamp":"2025-12-05T15:01:30.078Z","total":590}
 {"invoiceId":6,"level":"info","message":"Invoice created","timestamp":"2025-12-05T15:18:30.820Z","total":5900}
+{"invoiceId":7,"level":"info","message":"Invoice created","timestamp":"2025-12-05T18:40:04.592Z","total":2950}
+{"invoiceId":8,"level":"info","message":"Invoice created","timestamp":"2025-12-05T18:49:23.145Z","total":2950}
+{"error":{"code":"23503","constraint":"invoice_items_product_id_fkey","detail":"Key (product_id)=(0) is not present in table \"products\".","file":"ri_triggers.c","length":286,"line":"2599","name":"error","routine":"ri_ReportViolation","schema":"public","severity":"ERROR","table":"invoice_items"},"level":"error","message":"Error creating invoice","timestamp":"2025-12-05T18:54:54.569Z"}
+{"error":{"code":"23503","constraint":"invoice_items_product_id_fkey","detail":"Key (product_id)=(0) is not present in table \"products\".","file":"ri_triggers.c","length":286,"line":"2599","name":"error","routine":"ri_ReportViolation","schema":"public","severity":"ERROR","table":"invoice_items"},"level":"error","message":"Error creating invoice","timestamp":"2025-12-05T18:56:07.407Z"}
+{"error":{"code":"23503","constraint":"invoice_items_product_id_fkey","detail":"Key (product_id)=(0) is not present in table \"products\".","file":"ri_triggers.c","length":286,"line":"2599","name":"error","routine":"ri_ReportViolation","schema":"public","severity":"ERROR","table":"invoice_items"},"level":"error","message":"Error creating invoice","timestamp":"2025-12-05T18:56:24.609Z"}
+{"invoiceId":12,"level":"info","message":"Invoice created","timestamp":"2025-12-05T18:56:36.494Z","total":1770}
+{"invoiceId":13,"level":"info","message":"Invoice created","tenantId":1,"timestamp":"2025-12-05T19:14:40.428Z","total":1770}
+{"invoiceId":14,"level":"info","message":"Invoice created","tenantId":9,"timestamp":"2025-12-05T20:02:47.016Z","total":177000}

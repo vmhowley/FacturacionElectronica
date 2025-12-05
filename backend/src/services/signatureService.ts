@@ -36,7 +36,9 @@ export const loadP12 = (p12Path: string, password: string): KeyPair => {
   };
 };
 
-export const signXml = (xmlString: string, privateKeyPem: string, certPem: string): string => {
+
+
+export const signXml = (xmlString: string, privateKeyPem: string, certPem: string, referenceXPath: string = "//*[local-name(.)='eCF']"): string => {
   // Note: DOMParser from 'xmldom' is needed. 
   // Ensure 'xmldom' is installed: npm i xmldom @types/xmldom
   // The user example used 'xmldom' but I installed 'xml-crypto' which might need it.
@@ -50,7 +52,7 @@ export const signXml = (xmlString: string, privateKeyPem: string, certPem: strin
   } as any);
 
   sig.addReference({
-    xpath: "//*[local-name(.)='eCF']",
+    xpath: referenceXPath,
     transforms: [
       "http://www.w3.org/2000/09/xmldsig#enveloped-signature",
       "http://www.w3.org/TR/2001/REC-xml-c14n-20010315"

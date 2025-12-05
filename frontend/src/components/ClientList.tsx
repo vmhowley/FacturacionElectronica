@@ -1,7 +1,7 @@
-import axios from 'axios';
 import { Edit, Plus, Trash2, User } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import axios from '../api';
 
 interface Client {
     id: number;
