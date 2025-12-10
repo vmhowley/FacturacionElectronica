@@ -3,6 +3,7 @@ import { query } from '../db';
 import { requireAuth } from '../middleware/auth';
 import { buildECFXML } from '../services/xmlService';
 import { logger } from '../utils/logger';
+import { getNextNCF } from '../services/sequencesService';
 
 const router = Router();
 
@@ -127,13 +128,21 @@ router.post('/:id/sign', async (req, res) => {
     const { getCompanyConfig } = require('../services/configService');
     const config = await getCompanyConfig(invoice.tenant_id);
 
+    // Determine NCF
+    let ncf = invoice.e_ncf;
+    if (!ncf) {
+      ncf = await getNextNCF(invoice.tenant_id, invoice.type_code || '31');
+      // Persist NCF immediately to avoid sequence gaps if signing fails later
+      await query('UPDATE invoices SET e_ncf = $1 WHERE id = $2', [ncf, id]);
+    }
+
     // Build data object for XML
     const xmlData = {
       emisor: { rnc: tenant.rnc || config.company_rnc, nombre: tenant.name || config.company_name },
       receptor: { rnc: clientRes.rows[0].rnc_ci, nombre: clientRes.rows[0].name },
       fecha: new Date().toISOString(),
       tipo: invoice.type_code || '31', 
-      encf: 'E' + (invoice.type_code || '31') + '00000001', // Placeholder logic for NCF generation
+      encf: ncf,
       items: itemsRes.rows.map((it: any) => ({
         descripcion: 'Product ' + it.product_id,
         cantidad: it.quantity,
@@ -156,14 +165,8 @@ router.post('/:id/sign', async (req, res) => {
     const { privateKeyPem, certPem } = loadP12(config.certificate_path, config.certificate_password);
     const signedXml = signXml(xml, privateKeyPem, certPem);
     
-    // Save XML (optional, maybe save to DB or S3)
-    // fs.writeFileSync(`invoices/${id}.xml`, signedXml);
-    
-    // Update status
     // Update status and save XML content
-    // Note: You might need to add an 'xml_content' column to your table if it doesn't exist, 
-    // or use the 'xml_path' to store the content if it's TEXT type (which it is in schema.sql).
-    await query('UPDATE invoices SET status=$1, xml_path=$2 WHERE id=$3', ['signed', signedXml, id]);
+    await query('UPDATE invoices SET status=$1, xml_path=$2, e_ncf=$3 WHERE id=$4', ['signed', signedXml, ncf, id]);
     
     res.json({ message: 'Invoice signed successfully', xml: signedXml });
   } catch (err) {

@@ -1,6 +1,7 @@
-import { FileText, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import logo from '../assets/logo_digitbill.png';
 
 export const NavbarPublic: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -11,11 +12,9 @@ export const NavbarPublic: React.FC = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between h-20 items-center">
                     {/* Logo */}
-                    <div className="flex-shrink-0 flex items-center gap-2">
-                        <div className="bg-blue-600 p-2 rounded-lg">
-                            <FileText className="text-white w-6 h-6" />
-                        </div>
-                        <span className="text-2xl font-bold text-gray-900 tracking-tight">Factura<span className="text-blue-600">App</span></span>
+                    {/* Logo */}
+                    <div className="flex-shrink-0 flex items-center gap-2 overflow-hidden">
+                        <img src={logo} alt="DigitBill Logo" className="h-12 w-auto scale-150" />
                     </div>
 
                     {/* Desktop Menu */}

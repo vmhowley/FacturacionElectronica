@@ -54,7 +54,7 @@ export const Landing: React.FC = () => {
                         <FeatureCard 
                             icon={<CheckCircle2 className="w-8 h-8 text-blue-500" />}
                             title="Reportes Automáticos"
-                            description="Olvídate del 606, 607 y 608. FacturaApp los prepara por ti automáticamente."
+                            description="Olvídate del 606, 607 y 608. DigitBill los prepara por ti automáticamente."
                         />
                     </div>
                  </div>
@@ -63,7 +63,7 @@ export const Landing: React.FC = () => {
              {/* Footer */}
              <footer className="bg-gray-50 py-12 border-t border-gray-200">
                 <div className="max-w-7xl mx-auto px-4 text-center">
-                    <p className="text-gray-500">© 2024 FacturaApp Dominicana S.R.L. Todos los derechos reservados.</p>
+                    <p className="text-gray-500">© 2024 DigitBill Dominicana S.R.L. Todos los derechos reservados.</p>
                 </div>
              </footer>
         </div>

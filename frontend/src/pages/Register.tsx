@@ -49,7 +49,7 @@ export const Register: React.FC = () => {
                 </div>
             </div>
             <div className="mt-8 text-sm text-blue-200">
-                © 2024 FacturaApp S.R.L.
+                © 2024 DigitBill S.R.L.
             </div>
         </div>
 

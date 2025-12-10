@@ -1,8 +1,10 @@
-import { Building2, Save, Users } from 'lucide-react';
+import { Building2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
 import axios from '../api';
+import { CompanySettings } from '../components/settings/CompanySettings';
+import { SequenceSettings } from '../components/settings/SequenceSettings';
+import { UserSettings } from '../components/settings/UserSettings';
 
 export const Settings: React.FC = () => {
     const [activeTab, setActiveTab] = useState('company');
@@ -10,8 +12,6 @@ export const Settings: React.FC = () => {
     const [users, setUsers] = useState<any[]>([]);
     const [sequences, setSequences] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-
-    const { register, handleSubmit, reset } = useForm();
 
     const fetchAllData = async () => {
         setLoading(true);
@@ -24,7 +24,6 @@ export const Settings: React.FC = () => {
             setCompany(companyRes.data);
             setUsers(usersRes.data);
             setSequences(sequencesRes.data);
-            reset(companyRes.data); // Reset form with company data
         } catch (err) {
             console.error(err);
             toast.error('Error cargando configuración');
@@ -101,153 +100,19 @@ export const Settings: React.FC = () => {
                 
                 {/* COMPANY TAB */}
                 {activeTab === 'company' && (
-                    <form onSubmit={handleSubmit(onUpdateCompany)} className="max-w-3xl space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Razón Social</label>
-                                <input {...register('name')} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">RNC / Cédula</label>
-                                <input {...register('rnc')} disabled className="w-full px-4 py-2 border rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed" title="Contacta soporte para cambiar esto" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                                <input {...register('phone')} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Email Corporativo</label>
-                                <input {...register('email')} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
-                            </div>
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Dirección Física</label>
-                                <input {...register('address')} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
-                            </div>
-                        </div>
-                        <div className="flex justify-end pt-4 border-t">
-                            <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg flex items-center gap-2 font-medium transition-colors">
-                                <Save size={18} /> Guardar Cambios
-                            </button>
-                        </div>
-                    </form>
+                    <CompanySettings defaultValues={company} onSave={onUpdateCompany} />
                 )}
 
                 {/* SEQUENCES TAB */}
                 {activeTab === 'sequences' && (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead>
-                                <tr className="border-b text-gray-500 text-sm">
-                                    <th className="py-3 px-4">Código</th>
-                                    <th className="py-3 px-4">Tipo de Comprobante</th>
-                                    <th className="py-3 px-4 text-center">Próximo Número</th>
-                                    <th className="py-3 px-4 text-right">Vencimiento</th>
-                                    <th className="py-3 px-4 text-right">Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {sequences.map((seq) => (
-                                    <SequenceRow key={seq.id} sequence={seq} onUpdate={onUpdateSequence} />
-                                ))}
-                                {sequences.length === 0 && (
-                                    <tr><td colSpan={5} className="py-4 text-center text-gray-400">No hay secuencias configuradas</td></tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                    <SequenceSettings sequences={sequences} onUpdate={onUpdateSequence} />
                 )}
 
                 {/* USERS TAB */}
                 {activeTab === 'users' && (
-                    <div>
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="font-semibold text-gray-700">Usuarios Activos</h3>
-                            <button disabled className="text-gray-400 text-sm border px-3 py-1.5 rounded-lg flex items-center gap-2 cursor-not-allowed">
-                                <Users size={16} /> Agregar Usuario (Proximamente)
-                            </button>
-                        </div>
-                         <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead>
-                                <tr className="border-b text-gray-500 text-sm">
-                                    <th className="py-3 px-4">Usuario / Email</th>
-                                    <th className="py-3 px-4">Rol</th>
-                                    <th className="py-3 px-4 text-right">Fecha Registro</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {users.map((u) => (
-                                    <tr key={u.id} className="hover:bg-gray-50">
-                                        <td className="py-3 px-4 font-medium text-gray-800">{u.username}</td>
-                                        <td className="py-3 px-4">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                                                u.role === 'admin' ? 'bg-purple-100 text-purple-700' :
-                                                u.role === 'accountant' ? 'bg-blue-100 text-blue-700' :
-                                                'bg-gray-100 text-gray-700'
-                                            }`}>
-                                                {u.role.toUpperCase()}
-                                            </span>
-                                        </td>
-                                        <td className="py-3 px-4 text-right text-gray-500 text-sm">{new Date(u.created_at).toLocaleDateString()}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                    </div>
+                    <UserSettings users={users} />
                 )}
             </div>
         </div>
     );
 };
-
-// Helper component for Sequence Row to handle local state
-const SequenceRow = ({ sequence, onUpdate }: { sequence: any, onUpdate: (id: number, next: number, date: string) => void }) => {
-    const [next, setNext] = useState(sequence.next_number);
-    const [date, setDate] = useState(sequence.end_date ? new Date(sequence.end_date).toISOString().split('T')[0] : '');
-    const [isDirty, setIsDirty] = useState(false);
-
-    const handleUpdate = () => {
-        onUpdate(sequence.id, parseInt(next), date);
-        setIsDirty(false);
-    };
-
-    return (
-        <tr className="hover:bg-gray-50">
-            <td className="py-3 px-4 text-gray-500 text-sm font-mono">{sequence.type_code}</td>
-            <td className="py-3 px-4 font-medium text-gray-800">
-                {sequence.type_code === '01' && 'Crédito Fiscal'}
-                {sequence.type_code === '02' && 'Consumo Final'}
-                {sequence.type_code === '31' && 'e-CF Crédito Fiscal'}
-                {sequence.type_code === '32' && 'e-CF Consumo'}
-                {!['01','02','31','32'].includes(sequence.type_code) && 'Otro'}
-            </td>
-            <td className="py-3 px-4 text-center">
-                 <div className="flex items-center justify-center gap-2">
-                    <span className="text-gray-400 text-xs">B{sequence.type_code}...</span>
-                    <input 
-                        type="number" 
-                        value={next}
-                        onChange={(e) => { setNext(e.target.value); setIsDirty(true); }}
-                        className="w-20 px-2 py-1 border rounded text-center text-sm"
-                    />
-                 </div>
-            </td>
-            <td className="py-3 px-4 text-right">
-                <input 
-                    type="date" 
-                    value={date}
-                    onChange={(e) => { setDate(e.target.value); setIsDirty(true); }}
-                    className="px-2 py-1 border rounded text-sm text-gray-600"
-                />
-            </td>
-            <td className="py-3 px-4 text-right">
-                {isDirty && (
-                    <button onClick={handleUpdate} className="text-blue-600 hover:text-blue-800 text-sm font-semibold">
-                        Guardar
-                    </button>
-                )}
-            </td>
-        </tr>
-    );
-}

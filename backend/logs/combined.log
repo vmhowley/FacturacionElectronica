@@ -23,3 +23,4 @@
 {"invoiceId":16,"level":"info","message":"Invoice created","tenantId":10,"timestamp":"2025-12-09T20:51:04.069Z","total":826000}
 {"invoiceId":17,"level":"info","message":"Invoice created","tenantId":10,"timestamp":"2025-12-09T20:53:03.371Z","total":1652000}
 {"invoiceId":18,"level":"info","message":"Invoice created","tenantId":10,"timestamp":"2025-12-09T20:54:30.715Z","total":2065000}
+{"invoiceId":19,"level":"info","message":"Invoice created","tenantId":10,"timestamp":"2025-12-10T14:34:09.044Z","total":0}
