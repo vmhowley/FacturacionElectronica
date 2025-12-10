@@ -1,10 +1,12 @@
 import axios from 'axios';
 
-// Automatically detected IP from your environment
-const SERVER_IP = '10.0.0.108'; 
-const PORT = '3000';
+// Local IP (For debugging)
+// const SERVER_IP = '10.0.0.108'; 
+// const PORT = '3000';
+// const DEV_API_URL = `http://${SERVER_IP}:${PORT}/api`;
 
-const DEV_API_URL = `http://${SERVER_IP}:${PORT}/api`;
+// Production URL (Render)
+const DEV_API_URL = 'https://facturacionelectronica-p0p6.onrender.com/api';
 
 console.log('Using API URL:', DEV_API_URL);
 

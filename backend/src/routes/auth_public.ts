@@ -18,6 +18,32 @@ if (!supabaseUrl || !supabaseServiceKey) {
 
 const supabaseAdmin = createClient(supabaseUrl || '', supabaseServiceKey || '');
 
+
+// POST /login
+router.post('/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+
+        const { data, error } = await supabaseAdmin.auth.signInWithPassword({
+            email,
+            password
+        });
+
+        if (error) {
+            return res.status(401).json({ error: error.message });
+        }
+
+        res.json({
+            token: data.session.access_token,
+            user: data.user
+        });
+    } catch (err: any) {
+        console.error('Login error:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 // POST /register
 router.post('/register', async (req, res) => {
     try {

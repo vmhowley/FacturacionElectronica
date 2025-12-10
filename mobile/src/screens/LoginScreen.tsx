@@ -16,7 +16,7 @@ const LoginScreen = () => {
 
         setLoading(true);
         try {
-            const res = await api.post('/auth/login', {
+            const res = await api.post('/auth/public/login', {
                 email,
                 password
             });
