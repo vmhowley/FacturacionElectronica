@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, SafeAreaView } from 'react-native';
-import { styled } from 'nativewind';
+import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import api from '../services/api';
+import { useAuthStore } from '../store/authStore';
 
 const LoginScreen = () => {
+    const { login } = useAuthStore();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -20,8 +22,10 @@ const LoginScreen = () => {
                 email,
                 password
             });
-            Alert.alert('Success', `Welcome back! Token: ${res.data.token.substring(0, 10)}...`);
+            // Update global state
+            login(res.data.token, res.data.user);
             console.log('Login success:', res.data);
+            // No alert needed, view will switch automatically
         } catch (error: any) {
             console.log('Login error:', error.response?.data || error.message);
             Alert.alert('Login Failed', error.response?.data?.error || 'Unknown error');
