@@ -10,6 +10,9 @@ interface Product {
     unit_price: string;
     tax_rate: string;
     unit: string;
+    type?: 'product' | 'service';
+    stock_quantity?: number;
+    category?: string;
 }
 
 export const ProductList: React.FC = () => {
@@ -67,8 +70,9 @@ export const ProductList: React.FC = () => {
                     <table className="w-full">
                         <thead>
                             <tr className="bg-gray-50 border-b border-gray-100">
-                                <th className="text-left py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">SKU / Código</th>
+                                <th className="text-left py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">SKU / Tipo</th>
                                 <th className="text-left py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Descripción</th>
+                                <th className="text-center py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Existencia</th>
                                 <th className="text-right py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Precio Unitario</th>
                                 <th className="text-right py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">ITBIS</th>
                                 <th className="text-right py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Acciones</th>
@@ -86,15 +90,29 @@ export const ProductList: React.FC = () => {
                                     <tr key={product.id} className="hover:bg-gray-50/50 transition-colors">
                                         <td className="py-4 px-6">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">
+                                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${product.type === 'service' ? 'bg-purple-50 text-purple-600' : 'bg-orange-50 text-orange-600'}`}>
                                                     <Package size={20} />
                                                 </div>
-                                                <span className="font-medium text-gray-700">{product.sku || '-'}</span>
+                                                <div>
+                                                    <span className="font-medium text-gray-700 block">{product.sku || '-'}</span>
+                                                    <span className="text-xs text-gray-500 uppercase">{product.type === 'service' ? 'Servicio' : 'Producto'}</span>
+                                                </div>
                                             </div>
                                         </td>
                                         <td className="py-4 px-6">
                                             <div className="font-medium text-gray-900">{product.description}</div>
-                                            <div className="text-xs text-gray-500">{product.unit || 'Unidad'}</div>
+                                            <div className="text-xs text-gray-500">{product.category || 'General'} • {product.unit || 'Unidad'}</div>
+                                        </td>
+                                        <td className="py-4 px-6 text-center">
+                                            {product.type === 'product' ? (
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                                    (product.stock_quantity || 0) <= 5 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                                                }`}>
+                                                    {product.stock_quantity || 0}
+                                                </span>
+                                            ) : (
+                                                <span className="text-gray-400">-</span>
+                                            )}
                                         </td>
                                         <td className="py-4 px-6 text-right font-medium text-gray-900">
                                             RD$ {parseFloat(product.unit_price).toLocaleString('es-DO', { minimumFractionDigits: 2 })}

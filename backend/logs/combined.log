@@ -19,3 +19,7 @@
 {"invoiceId":12,"level":"info","message":"Invoice created","timestamp":"2025-12-05T18:56:36.494Z","total":1770}
 {"invoiceId":13,"level":"info","message":"Invoice created","tenantId":1,"timestamp":"2025-12-05T19:14:40.428Z","total":1770}
 {"invoiceId":14,"level":"info","message":"Invoice created","tenantId":9,"timestamp":"2025-12-05T20:02:47.016Z","total":177000}
+{"invoiceId":15,"level":"info","message":"Invoice created","tenantId":9,"timestamp":"2025-12-09T17:38:45.455Z","total":177000}
+{"invoiceId":16,"level":"info","message":"Invoice created","tenantId":10,"timestamp":"2025-12-09T20:51:04.069Z","total":826000}
+{"invoiceId":17,"level":"info","message":"Invoice created","tenantId":10,"timestamp":"2025-12-09T20:53:03.371Z","total":1652000}
+{"invoiceId":18,"level":"info","message":"Invoice created","tenantId":10,"timestamp":"2025-12-09T20:54:30.715Z","total":2065000}

@@ -95,3 +95,24 @@ export const checkStatusDGII = async (trackId: string, tenantId: number) => {
     throw new Error('Failed to check status');
   }
 };
+
+export const checkRNC = async (rnc: string, tenantId: number) => {
+    // Note: DGII Consultas often use a different endpoint or public web scraping if no API provided.
+    // However, for e-CF certified senders, there is usually a 'ConsultarDirectorio' or similar in the auth environment.
+    // We will assume a standard RNC info endpoint exists or mock it for now as 'Not Implemented fully without specific endpoint docs'.
+    
+    // Placeholder implementation 
+    const token = await getAuthToken(tenantId);
+    const url = `${getBaseUrl()}/consultas/api/rnc/${rnc}`;
+
+    try {
+        const response = await axios.get(url, {
+             headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return response.data; // Expected { rnc, nombre, estado, ... }
+    } catch (error: any) {
+        console.warn(`RNC Check failed for ${rnc}`, error.message);
+        // Fallback or return null
+        return null;
+    }
+};

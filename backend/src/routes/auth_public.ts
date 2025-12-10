@@ -1,0 +1,94 @@
+import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+import { Router } from 'express';
+import { query } from '../db';
+
+dotenv.config();
+
+const router = Router();
+
+// Initialize Supabase Admin client to create users
+// We need SERVICE_ROLE_KEY to create users programmatically without sending confirmation emails immediately if we want auto-login
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !supabaseServiceKey) {
+  console.error('ERROR: Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env file');
+}
+
+const supabaseAdmin = createClient(supabaseUrl || '', supabaseServiceKey || '');
+
+// POST /register
+router.post('/register', async (req, res) => {
+    try {
+        const { email, password, company_name, rnc, phone, address, type } = req.body;
+
+        // Basic validation
+        if (!email || !password || !company_name || !rnc) {
+            return res.status(400).json({ error: 'Faltan campos obligatorios' });
+        }
+
+        // Validate RNC length
+        if (rnc.length !== 9 && rnc.length !== 11) {
+            return res.status(400).json({ error: 'El RNC/Cédula debe tener 9 u 11 dígitos' });
+        }
+
+        console.log(`Creating user ${email} for company ${company_name}`);
+
+        // 1. Create User in Supabase
+        const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+            email,
+            password,
+            email_confirm: true // Auto-confirm for this flow
+        });
+
+        if (authError) {
+            console.error('Supabase Auth Error:', authError);
+            return res.status(400).json({ error: 'Error creando usuario: ' + authError.message });
+        }
+
+        const uid = authData.user.id;
+
+        // 2. Transaction for DB
+        await query('BEGIN');
+
+        try {
+            // Create Tenant
+            const tenantRes = await query(
+                'INSERT INTO tenants (name, rnc, address, phone, email, type, status) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
+                [company_name, rnc, address, phone, email, type, 'active']
+            );
+            const tenantId = tenantRes.rows[0].id;
+
+            // Create Admin User
+            await query(
+                'INSERT INTO users (tenant_id, username, password_hash, role, supabase_uid) VALUES ($1, $2, $3, $4, $5)',
+                [tenantId, email, 'managed_by_supabase', 'admin', uid]
+            );
+
+            // Create Default Sequences (Optional but helpful)
+            // e.g. Factura de Crédito Fiscal (31)
+            await query(
+                `INSERT INTO sequences (tenant_id, type_code, next_number, end_date) 
+                 VALUES ($1, '31', 1, '2030-12-31')`, 
+                 [tenantId]
+            );
+
+            await query('COMMIT');
+
+            res.json({ success: true, message: 'Cuenta creada exitosamente', tenant_id: tenantId });
+
+        } catch (dbError) {
+            await query('ROLLBACK');
+            // Cleanup Supabase user if DB fails (manual rollback for Auth)
+            await supabaseAdmin.auth.admin.deleteUser(uid);
+            throw dbError;
+        }
+
+    } catch (err) {
+        console.error('Registration Error:', err);
+        res.status(500).json({ error: 'Error interno del servidor al registrar' });
+    }
+});
+
+export default router;

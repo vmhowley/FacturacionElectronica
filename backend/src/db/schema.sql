@@ -3,6 +3,11 @@ CREATE TABLE IF NOT EXISTS tenants (
   id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   rnc VARCHAR(20),
+  address TEXT,
+  phone VARCHAR(20),
+  email VARCHAR(255),
+  type VARCHAR(20) CHECK (type IN ('juridico', 'fisico')),
+  plan VARCHAR(20) DEFAULT 'free' CHECK (plan IN ('free', 'pro', 'enterprise')),
   status VARCHAR(20) DEFAULT 'active',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -40,6 +45,10 @@ CREATE TABLE IF NOT EXISTS products (
   unit_price DECIMAL(12, 2) NOT NULL,
   tax_rate DECIMAL(5, 2) DEFAULT 18.00,
   unit VARCHAR(20),
+  type VARCHAR(20) CHECK (type IN ('product', 'service')) DEFAULT 'product',
+  cost DECIMAL(12, 2) DEFAULT 0.00,
+  stock_quantity INTEGER DEFAULT 0,
+  category VARCHAR(50),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(tenant_id, sku)
 );
@@ -58,6 +67,8 @@ CREATE TABLE IF NOT EXISTS invoices (
   xml_path TEXT,
   pdf_path TEXT,
   track_id_dgii VARCHAR(50),
+  type_code VARCHAR(2) DEFAULT '31', -- 31=Invoice, 33=Credit Note, 34=Debit Note
+  reference_ncf VARCHAR(19), -- For notes, referencing the original e-NCF
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

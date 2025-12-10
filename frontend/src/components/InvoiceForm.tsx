@@ -12,8 +12,10 @@ interface InvoiceItem {
 }
 
 interface InvoiceFormData {
-    client_id: number; // Simplified
+    client_id: number;
     items: InvoiceItem[];
+    type_code: string;
+    reference_ncf?: string;
 }
 
 export const InvoiceForm: React.FC = () => {
@@ -73,11 +75,11 @@ export const InvoiceForm: React.FC = () => {
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                {/* Client Section */}
+                {/* Client & Type Section */}
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
                     <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                         <div className="w-1 h-6 bg-blue-600 rounded-full"></div>
-                        Información del Cliente
+                        Datos Generales
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
@@ -102,7 +104,33 @@ export const InvoiceForm: React.FC = () => {
                                 </button>
                             </div>
                         </div>
-                        {/* Placeholder for more client fields */}
+
+                         <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1.5">Tipo de Comprobante</label>
+                            <select
+                                {...register('type_code')}
+                                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all outline-none"
+                            >
+                                <option value="31">Factura Crédito Fiscal (31)</option>
+                                <option value="32">Factura de Consumo (32)</option>
+                                <option value="33">Nota de Crédito (33)</option>
+                                <option value="34">Nota de Débito (34)</option>
+                                <option value="43">Gastos Menores (43)</option>
+                                <option value="44">Regímenes Especiales (44)</option>
+                                <option value="45">Gubernamental (45)</option>
+                            </select>
+                        </div>
+
+                        {(watch('type_code') === '33' || watch('type_code') === '34') && (
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5">NCF Afectado (Referencia)</label>
+                                <input
+                                    {...register('reference_ncf', { required: 'El NCF Afectado es requerido para notas' })}
+                                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all outline-none"
+                                    placeholder="e.g. E3100000001"
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
 

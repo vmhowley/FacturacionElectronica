@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { query } from '../db';
-import { requireAuth } from '../middleware/auth';
+import { requireAuth, requireRole } from '../middleware/auth';
 
 const router = Router();
 
@@ -34,12 +34,17 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/products
-router.post('/', async (req, res) => {
+router.post('/', requireRole(['admin']), async (req, res) => {
   try {
-    const { sku, description, unit_price, tax_rate, unit } = req.body;
+    const { sku, description, unit_price, tax_rate, unit, type, cost, stock_quantity, category } = req.body;
+    
+    // Default values logic
+    const productType = type || 'product';
+    const productStock = productType === 'service' ? 0 : (stock_quantity || 0);
+
     const result = await query(
-      'INSERT INTO products (tenant_id, sku, description, unit_price, tax_rate, unit) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-      [req.tenantId, sku, description, unit_price, tax_rate || 18.00, unit]
+      'INSERT INTO products (tenant_id, sku, description, unit_price, tax_rate, unit, type, cost, stock_quantity, category) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *',
+      [req.tenantId, sku, description, unit_price, tax_rate || 18.00, unit, productType, cost || 0, productStock, category]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -52,10 +57,15 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { sku, description, unit_price, tax_rate, unit } = req.body;
+    const { sku, description, unit_price, tax_rate, unit, type, cost, stock_quantity, category } = req.body;
+    
+    // Logic for updates
+    const productType = type || 'product'; 
+    const productStock = productType === 'service' ? 0 : (stock_quantity || 0);
+
     const result = await query(
-      'UPDATE products SET sku=$1, description=$2, unit_price=$3, tax_rate=$4, unit=$5 WHERE id=$6 AND tenant_id=$7 RETURNING *',
-      [sku, description, unit_price, tax_rate, unit, id, req.tenantId]
+      'UPDATE products SET sku=$1, description=$2, unit_price=$3, tax_rate=$4, unit=$5, type=$6, cost=$7, stock_quantity=$8, category=$9 WHERE id=$10 AND tenant_id=$11 RETURNING *',
+      [sku, description, unit_price, tax_rate, unit, productType, cost, productStock, category, id, req.tenantId]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Product not found' });

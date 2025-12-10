@@ -10,6 +10,10 @@ interface ProductFormData {
     unit_price: number;
     tax_rate: number;
     unit: string;
+    type: 'product' | 'service';
+    cost: number;
+    stock_quantity: number;
+    category: string;
 }
 
 export const ProductForm: React.FC = () => {
@@ -17,12 +21,17 @@ export const ProductForm: React.FC = () => {
     const navigate = useNavigate();
     const isEditMode = !!id;
 
-    const { register, handleSubmit, setValue, formState: { errors } } = useForm<ProductFormData>({
+    const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<ProductFormData>({
         defaultValues: {
             tax_rate: 18,
-            unit: 'Unidad'
+            unit: 'Unidad',
+            type: 'product',
+            stock_quantity: 0,
+            cost: 0
         }
     });
+
+    const watchType = watch('type');
 
     useEffect(() => {
         if (isEditMode) {
@@ -39,6 +48,10 @@ export const ProductForm: React.FC = () => {
             setValue('unit_price', parseFloat(product.unit_price));
             setValue('tax_rate', parseFloat(product.tax_rate));
             setValue('unit', product.unit);
+            setValue('type', product.type || 'product');
+            setValue('cost', parseFloat(product.cost || 0));
+            setValue('stock_quantity', parseInt(product.stock_quantity || 0));
+            setValue('category', product.category || '');
         } catch (error) {
             console.error('Error fetching product:', error);
             alert('Error al cargar los datos del producto');
@@ -75,6 +88,32 @@ export const ProductForm: React.FC = () => {
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 space-y-6">
+                
+                {/* Product Type Selection */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Item</label>
+                    <div className="flex gap-4">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input 
+                                type="radio" 
+                                value="product" 
+                                {...register('type')} 
+                                className="w-4 h-4 text-blue-600"
+                            />
+                            <span className="text-gray-700">Producto</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input 
+                                type="radio" 
+                                value="service" 
+                                {...register('type')} 
+                                className="w-4 h-4 text-blue-600"
+                            />
+                            <span className="text-gray-700">Servicio</span>
+                        </label>
+                    </div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="col-span-2">
                         <label className="block text-sm font-medium text-gray-700 mb-1.5">Descripción</label>
@@ -96,36 +135,94 @@ export const ProductForm: React.FC = () => {
                     </div>
 
                     <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Categoría</label>
+                        <select
+                            {...register('category')}
+                            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all outline-none"
+                        >
+                            <option value="">Seleccionar Categoría</option>
+                            <option value="General">General</option>
+                            <option value="Hardware">Hardware</option>
+                            <option value="Software">Software</option>
+                            <option value="Servicios">Servicios</option>
+                            <option value="Insumos">Insumos</option>
+                        </select>
+                    </div>
+
+                    <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1.5">Unidad de Medida</label>
-                        <input
+                        <select
                             {...register('unit')}
                             className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all outline-none"
-                            placeholder="Ej: Unidad, Hora, Servicio"
-                        />
+                        >
+                            <option value="Unidad">Unidad</option>
+                            <option value="Servicio">Servicio</option>
+                            <option value="Hora">Hora</option>
+                            <option value="Libra">Libra</option>
+                            <option value="Kilo">Kilo</option>
+                            <option value="Caja">Caja</option>
+                            <option value="Paquete">Paquete</option>
+                        </select>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Precio Unitario (RD$)</label>
-                        <div className="relative">
-                            <span className="absolute left-3 top-2.5 text-gray-400 text-sm">$</span>
-                            <input
-                                type="number"
-                                step="0.01"
-                                {...register('unit_price', { required: 'El precio es obligatorio', min: 0 })}
-                                className="w-full pl-7 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all outline-none"
-                                placeholder="0.00"
-                            />
+                         {/* Empty column to align grid if needed, or use for Price */}
+                    </div>
+
+                    <div className="border-t border-gray-100 col-span-2 pt-4 mt-2">
+                        <h3 className="text-lg font-semibold text-gray-800 mb-4">Detalles de Precio e Inventario</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                             <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5">Costo (RD$)</label>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-2.5 text-gray-400 text-sm">$</span>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        {...register('cost', { min: 0 })}
+                                        className="w-full pl-7 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all outline-none"
+                                        placeholder="0.00"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5">Precio Venta (RD$)</label>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-2.5 text-gray-400 text-sm">$</span>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        {...register('unit_price', { required: 'El precio es obligatorio', min: 0 })}
+                                        className="w-full pl-7 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all outline-none"
+                                        placeholder="0.00"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5">ITBIS (%)</label>
+                                <input
+                                    type="number"
+                                    step="1"
+                                    {...register('tax_rate', { required: true, min: 0, max: 100 })}
+                                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all outline-none"
+                                />
+                            </div>
+
+                            {watchType === 'product' && (
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Existencia (Stock)</label>
+                                    <input
+                                        type="number"
+                                        step="1"
+                                        {...register('stock_quantity', { min: 0 })}
+                                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all outline-none"
+                                        placeholder="0"
+                                    />
+                                </div>
+                            )}
                         </div>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">ITBIS (%)</label>
-                        <input
-                            type="number"
-                            step="1"
-                            {...register('tax_rate', { required: true, min: 0, max: 100 })}
-                            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all outline-none"
-                        />
                     </div>
                 </div>
 
@@ -142,3 +239,4 @@ export const ProductForm: React.FC = () => {
         </div>
     );
 };
+

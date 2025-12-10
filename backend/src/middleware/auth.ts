@@ -19,8 +19,9 @@ const supabase = createClient(supabaseUrl || '', supabaseKey || '');
 declare global {
   namespace Express {
     interface Request {
-      user?: any;
+      user?: any; // Should interface this
       tenantId?: number;
+      role?: string;
     }
   }
 }
@@ -44,7 +45,7 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
 
     // 2. Resolve Tenant
     // Check if user exists in local DB
-    const userRes = await query('SELECT id, tenant_id FROM users WHERE supabase_uid = $1', [user.id]);
+    const userRes = await query('SELECT id, tenant_id, role FROM users WHERE supabase_uid = $1', [user.id]);
     
     let tenantId;
 
@@ -67,7 +68,7 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
     }
 
     // Attach to request
-    req.user = user;
+    req.user = { ...user, role: userRes.rows[0].role }; // Attach role
     req.tenantId = tenantId;
 
     next();
@@ -75,4 +76,14 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
     console.error('Auth Middleware Error:', err);
     res.status(401).json({ error: 'Authentication failed' });
   }
+};
+
+export const requireRole = (allowedRoles: string[]) => {
+    return (req: Request, res: Response, next: NextFunction) => {
+        const userRole = req.user?.role;
+        if (!userRole || !allowedRoles.includes(userRole)) {
+            return res.status(403).json({ error: 'Access Denied: Insufficient permissions' });
+        }
+        next();
+    }
 };

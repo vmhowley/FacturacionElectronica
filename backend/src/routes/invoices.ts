@@ -11,10 +11,44 @@ router.use(requireAuth);
 
 // GET /api/invoices
 router.get('/', async (req, res) => {
+  // Fetch invoices with client names
   try {
-    const result = await query('SELECT * FROM invoices WHERE tenant_id = $1 ORDER BY created_at DESC', [req.tenantId]);
+    const result = await query(`
+        SELECT i.*, c.name as client_name 
+        FROM invoices i 
+        LEFT JOIN clients c ON i.client_id = c.id 
+        WHERE i.tenant_id = $1 
+        ORDER BY i.created_at DESC
+    `, [req.tenantId]);
     res.json(result.rows);
   } catch (err) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// GET /api/invoices/:id
+router.get('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const invRes = await query(`
+        SELECT i.*, c.name as client_name, c.rnc_ci as client_rnc 
+        FROM invoices i 
+        JOIN clients c ON i.client_id = c.id 
+        WHERE i.id = $1 AND i.tenant_id = $2
+    `, [id, req.tenantId]);
+    
+    if (invRes.rows.length === 0) return res.status(404).json({ error: 'Invoice not found' });
+    
+    const itemsRes = await query(`
+        SELECT ii.*, p.description as product_description 
+        FROM invoice_items ii 
+        LEFT JOIN products p ON ii.product_id = p.id
+        WHERE ii.invoice_id = $1
+    `, [id]);
+
+    res.json({ ...invRes.rows[0], items: itemsRes.rows });
+  } catch (err) {
+    console.log(err);
     res.status(500).json({ error: 'Database error' });
   }
 });
@@ -23,15 +57,15 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   const client = await query('BEGIN');
   try {
-    const { client_id, items } = req.body;
+    const { client_id, items, type_code, reference_ncf } = req.body;
     // Calculate totals (simplified)
     let net_total = 0;
     let tax_total = 0;
     
     // Insert invoice
     const invRes = await query(
-      'INSERT INTO invoices (tenant_id, client_id, net_total, tax_total, total) VALUES ($1, $2, $3, $4, $5) RETURNING id',
-      [req.tenantId, client_id, 0, 0, 0]
+      'INSERT INTO invoices (tenant_id, client_id, net_total, tax_total, total, type_code, reference_ncf) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
+      [req.tenantId, client_id, 0, 0, 0, type_code || '31', reference_ncf || null]
     );
     const invoiceId = invRes.rows[0].id;
 
@@ -85,27 +119,34 @@ router.post('/:id/sign', async (req, res) => {
     const clientRes = await query('SELECT * FROM clients WHERE id = $1', [invoice.client_id]);
     const itemsRes = await query('SELECT * FROM invoice_items WHERE invoice_id = $1', [id]);
     
-    // Load company config
+    // Fetch tenant info for Emisor
+    const tenantRes = await query('SELECT name, rnc FROM tenants WHERE id = $1', [invoice.tenant_id]);
+    const tenant = tenantRes.rows[0];
+
+    // Load company config (still needed for cert path, although cert usually should be in tenant or sec storage)
     const { getCompanyConfig } = require('../services/configService');
-    const config = await getCompanyConfig();
+    const config = await getCompanyConfig(invoice.tenant_id);
 
     // Build data object for XML
     const xmlData = {
-      emisor: { rnc: config.company_rnc, nombre: config.company_name },
+      emisor: { rnc: tenant.rnc || config.company_rnc, nombre: tenant.name || config.company_name },
       receptor: { rnc: clientRes.rows[0].rnc_ci, nombre: clientRes.rows[0].name },
       fecha: new Date().toISOString(),
-      tipo: '31', // Example
-      encf: 'E3100000001', // Should generate from sequence
+      tipo: invoice.type_code || '31', 
+      encf: 'E' + (invoice.type_code || '31') + '00000001', // Placeholder logic for NCF generation
       items: itemsRes.rows.map((it: any) => ({
         descripcion: 'Product ' + it.product_id,
         cantidad: it.quantity,
         precio: it.unit_price,
         monto: it.line_amount,
-        impuesto: it.line_tax
+        impuesto: it.line_tax,
+        itbis_rate: '18' // Simplification
       })),
       subtotal: invoice.net_total,
       impuestototal: invoice.tax_total,
-      total: invoice.total
+      total: invoice.total,
+      fecha_vencimiento: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days default
+      metodo_pago: '01' // Cash
     };
 
     const xml = buildECFXML(xmlData as any); // Cast for now
