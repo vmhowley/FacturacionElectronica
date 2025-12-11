@@ -1,21 +1,13 @@
-import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
+import { supabaseAdmin } from '../services/supabase';
 import { Router } from 'express';
-import path from 'path';
 import { query } from '../db';
-
+import path from 'path';
+import dotenv from 'dotenv';
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const router = Router();
 
-// Initialize Supabase Admin Client (Service Role)
-const supabaseUrl = process.env.SUPABASE_URL || '';
-// WARNING: This key allows bypassing RLS. Keep it secret!
-// In a real app, ensure this key is loaded from a secure backend-only env var (SUPABASE_SERVICE_ROLE_KEY)
-// For now, using what we have, but ideally you should add SUPABASE_SERVICE_ROLE_KEY to .env
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '';
-
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+// Initialize configured in services/supabase.ts
 
 // Middleware to check if requester is a SUPER ADMIN
 // For simplicity MVP, we'll check for a specific header "x-admin-secret" matched against an env var

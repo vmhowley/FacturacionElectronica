@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { query } from '../db';
 import { requireAuth, requireRole } from '../middleware/auth';
+import { supabaseAdmin } from '../services/supabase';
 
 const router = Router();
 
@@ -84,17 +85,7 @@ router.put('/sequences/:id', async (req, res) => {
     }
 });
 
-import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
-import path from 'path';
 
-// Load env to ensure we have keys
-dotenv.config({ path: path.join(__dirname, '../../.env') });
-
-const supabaseUrl = process.env.SUPABASE_URL || '';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || ''; // Fallback for dev, but really needs Service Role for invites
-
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
 // POST /api/settings/users/invite
 router.post('/users/invite', async (req, res) => {

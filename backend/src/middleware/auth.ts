@@ -1,19 +1,11 @@
-import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
 import { NextFunction, Request, Response } from 'express';
 import { query } from '../db';
+import { supabase } from '../services/supabase';
 
-dotenv.config();
-
-// Initialize minimal Supabase client for auth verification
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseKey) {
-  console.error('ERROR: Missing SUPABASE_URL or SUPABASE_ANON_KEY in .env file');
+// Helper to check for missing envs, but supabase service handles logging now
+if (!process.env.SUPABASE_URL) {
+   console.error('ERROR: Missing SUPABASE_URL in .env');
 }
-
-const supabase = createClient(supabaseUrl || '', supabaseKey || '');
 
 // Extend Express Request
 declare global {

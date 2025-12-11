@@ -1,22 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
+import { supabaseAdmin } from '../services/supabase';
 import { Router } from 'express';
 import { query } from '../db';
 
-dotenv.config();
-
 const router = Router();
-
-// Initialize Supabase Admin client to create users
-// We need SERVICE_ROLE_KEY to create users programmatically without sending confirmation emails immediately if we want auto-login
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('ERROR: Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env file');
-}
-
-const supabaseAdmin = createClient(supabaseUrl || '', supabaseServiceKey || '');
 
 
 // POST /login
