@@ -2,7 +2,7 @@ import { Plus, Save, Trash2 } from 'lucide-react';
 import React from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import axios from '../api';
+import api from '../api';
 
 interface InvoiceItem {
     product_id: number; // Simplified for now, would be a select in real app
@@ -34,8 +34,8 @@ export const InvoiceForm: React.FC = () => {
         const fetchData = async () => {
             try {
                 const [clientsRes, productsRes] = await Promise.all([
-                    axios.get('http://localhost:3000/api/clients'),
-                    axios.get('http://localhost:3000/api/products')
+                    api.get('/api/clients'),
+                    api.get('/api/products')
                 ]);
                 setClients(clientsRes.data);
                 setProducts(productsRes.data);
@@ -53,7 +53,7 @@ export const InvoiceForm: React.FC = () => {
 
     const onSubmit = async (data: InvoiceFormData) => {
         try {
-            await axios.post('http://localhost:3000/api/invoices', data);
+            await api.post('/api/invoices', data);
             navigate('/');
         } catch (err) {
             console.error(err);

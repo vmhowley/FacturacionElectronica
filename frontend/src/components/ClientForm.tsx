@@ -2,7 +2,7 @@ import { ArrowLeft, Save } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import axios from '../api';
+import api from '../api';
 
 interface ClientFormData {
     name: string;
@@ -32,7 +32,7 @@ export const ClientForm: React.FC = () => {
 
     const fetchClient = async () => {
         try {
-            const response = await axios.get(`http://localhost:3000/api/clients/${id}`);
+            const response = await api.get(`/api/clients/${id}`);
             const client = response.data;
             setValue('name', client.name);
             setValue('rnc_ci', client.rnc_ci);
@@ -50,9 +50,9 @@ export const ClientForm: React.FC = () => {
     const onSubmit = async (data: ClientFormData) => {
         try {
             if (isEditMode) {
-                await axios.put(`http://localhost:3000/api/clients/${id}`, data);
+                await api.put(`/api/clients/${id}`, data);
             } else {
-                await axios.post('http://localhost:3000/api/clients', data);
+                await api.post('/api/clients', data);
             }
             navigate('/clients');
         } catch (error) {

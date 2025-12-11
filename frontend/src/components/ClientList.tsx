@@ -1,7 +1,7 @@
 import { Edit, Plus, Trash2, User } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import axios from '../api';
+import api from '../api';
 
 interface Client {
     id: number;
@@ -23,7 +23,7 @@ export const ClientList: React.FC = () => {
 
     const fetchClients = async () => {
         try {
-            const response = await axios.get('http://localhost:3000/api/clients');
+            const response = await api.get('/api/clients');
             setClients(response.data);
         } catch (error) {
             console.error('Error fetching clients:', error);
@@ -35,7 +35,7 @@ export const ClientList: React.FC = () => {
     const handleDelete = async (id: number) => {
         if (window.confirm('¿Estás seguro de que deseas eliminar este cliente?')) {
             try {
-                await axios.delete(`http://localhost:3000/api/clients/${id}`);
+                await api.delete(`/api/clients/${id}`);
                 fetchClients();
             } catch (error) {
                 console.error('Error deleting client:', error);

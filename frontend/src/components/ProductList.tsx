@@ -1,7 +1,7 @@
 import { Edit, Package, Plus, Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import axios from '../api';
+import api from '../api';
 
 interface Product {
     id: number;
@@ -25,7 +25,7 @@ export const ProductList: React.FC = () => {
 
     const fetchProducts = async () => {
         try {
-            const response = await axios.get('http://localhost:3000/api/products');
+            const response = await api.get('/api/products');
             setProducts(response.data);
         } catch (error) {
             console.error('Error fetching products:', error);
@@ -37,7 +37,7 @@ export const ProductList: React.FC = () => {
     const handleDelete = async (id: number) => {
         if (window.confirm('¿Estás seguro de que deseas eliminar este producto?')) {
             try {
-                await axios.delete(`http://localhost:3000/api/products/${id}`);
+                await api.delete(`/api/products/${id}`);
                 fetchProducts();
             } catch (error) {
                 console.error('Error deleting product:', error);

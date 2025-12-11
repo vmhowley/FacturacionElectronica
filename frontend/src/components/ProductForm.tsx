@@ -2,7 +2,7 @@ import { ArrowLeft, Save } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import axios from '../api';
+import api from '../api';
 
 interface ProductFormData {
     sku: string;
@@ -41,7 +41,7 @@ export const ProductForm: React.FC = () => {
 
     const fetchProduct = async () => {
         try {
-            const response = await axios.get(`http://localhost:3000/api/products/${id}`);
+            const response = await api.get(`/api/products/${id}`);
             const product = response.data;
             setValue('sku', product.sku);
             setValue('description', product.description);
@@ -62,9 +62,9 @@ export const ProductForm: React.FC = () => {
     const onSubmit = async (data: ProductFormData) => {
         try {
             if (isEditMode) {
-                await axios.put(`http://localhost:3000/api/products/${id}`, data);
+                await api.put(`/api/products/${id}`, data);
             } else {
-                await axios.post('http://localhost:3000/api/products', data);
+                await api.post('/api/products', data);
             }
             navigate('/products');
         } catch (error) {
