@@ -18,6 +18,7 @@ interface AuthContextType {
     loading: boolean;
     signOut: () => Promise<void>;
     isAdmin: boolean;
+    needsMFA: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -26,7 +27,8 @@ const AuthContext = createContext<AuthContextType>({
     profile: null,
     loading: true,
     signOut: async () => { },
-    isAdmin: false
+    isAdmin: false,
+    needsMFA: false
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -34,6 +36,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
+    const [needsMFA, setNeedsMFA] = useState(false);
 
     const fetchProfile = async () => {
         try {
@@ -45,22 +48,63 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     useEffect(() => {
+        // Helper to safely check MFA
+        const checkMFA = async (session: Session | null) => {
+            if (!session) return false;
+            try {
+                if (!supabase.auth.mfa) {
+                   console.warn("Supabase MFA API not available");
+                   return false;
+                }
+                const { data: mfaData, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+                if (error) {
+                    console.error("MFA Check Error:", error);
+                    return false;
+                }
+                if (mfaData && mfaData.currentLevel === 'aal1' && mfaData.nextLevel === 'aal2') {
+                    return true;
+                }
+            } catch (err) {
+                console.error("MFA Check Crash:", err);
+            }
+            return false;
+        };
+
         // Get initial session
-        supabase.auth.getSession().then(({ data: { session } }) => {
+        supabase.auth.getSession().then(async ({ data: { session } }) => {
             setSession(session);
             setUser(session?.user ?? null);
-            if (session) fetchProfile();
+            
+            if (session) {
+                 const needs2FA = await checkMFA(session);
+                 setNeedsMFA(needs2FA);
+                 await fetchProfile();
+            } else {
+                 setNeedsMFA(false);
+                 setProfile(null);
+            }
+            setLoading(false);
+        }).catch(err => {
+            console.error("Session restore error:", err);
             setLoading(false);
         });
 
         // Listen for changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
             setSession(session);
             setUser(session?.user ?? null);
+            
             if (session) {
-                fetchProfile();
+                const needs2FA = await checkMFA(session);
+                setNeedsMFA(needs2FA);
+                // We don't await here because onAuthStateChange is an event listener
+                // and we don't want to block UI updates if profile takes time,
+                // BUT for consistency we can manage loading if needed.
+                // However, the initial load is critical.
+                fetchProfile(); 
             } else {
                 setProfile(null);
+                setNeedsMFA(false);
             }
             setLoading(false);
         });
@@ -80,7 +124,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             profile, 
             loading, 
             signOut,
-            isAdmin: profile?.role === 'admin'
+            isAdmin: profile?.role === 'admin',
+            needsMFA
         }}>
             {children}
         </AuthContext.Provider>

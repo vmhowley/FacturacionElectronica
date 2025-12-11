@@ -5,6 +5,7 @@ import axios from '../api';
 import { CompanySettings } from '../components/settings/CompanySettings';
 import { SequenceSettings } from '../components/settings/SequenceSettings';
 import { UserSettings } from '../components/settings/UserSettings';
+import { SecuritySettings } from '../components/settings/SecuritySettings';
 
 export const Settings: React.FC = () => {
     const [activeTab, setActiveTab] = useState('company');
@@ -93,6 +94,13 @@ export const Settings: React.FC = () => {
                     Usuarios
                     {activeTab === 'users' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t-full"></div>}
                 </button>
+                <button
+                    onClick={() => setActiveTab('security')}
+                    className={`px-6 py-3 font-medium text-sm transition-colors relative ${activeTab === 'security' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                    Seguridad
+                    {activeTab === 'security' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t-full"></div>}
+                </button>
             </div>
 
             {/* Content */}
@@ -111,6 +119,11 @@ export const Settings: React.FC = () => {
                 {/* USERS TAB */}
                 {activeTab === 'users' && (
                     <UserSettings users={users} onRefresh={fetchAllData} />
+                )}
+
+                {/* SECURITY TAB */}
+                {activeTab === 'security' && (
+                  <SecuritySettings />
                 )}
             </div>
         </div>

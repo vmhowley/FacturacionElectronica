@@ -25,10 +25,11 @@ import type { ReactNode } from 'react';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, roles }: { children: ReactNode, roles?: string[] }) => {
-  const { session, loading, profile } = useAuth(); // Assuming profile is loaded
+  const { session, loading, profile, needsMFA } = useAuth(); // Assuming profile is loaded
 
   if (loading) return <div className="min-h-screen flex items-center justify-center">Cargando...</div>;
   if (!session) return <Navigate to="/login" replace />;
+  if (needsMFA) return <Navigate to="/login" replace />; // Redirect to login for MFA verification
 
   if (roles && profile && !roles.includes(profile.role)) {
      return <div className="p-10 text-center text-red-500">Acceso Denegado: Permisos insuficientes (Rol: {profile.role})</div>;
@@ -39,9 +40,10 @@ const ProtectedRoute = ({ children, roles }: { children: ReactNode, roles?: stri
 
 // Route that redirects to Dashboard if logged in, otherwise renders children (Public Page)
 const PublicRoute = ({ children }: { children: ReactNode }) => {
-  const { session, loading } = useAuth();
+  const { session, loading, needsMFA } = useAuth();
   if (loading) return null; // Or loader
-  if (session) return <Navigate to="/dashboard" replace />;
+  // Only redirect if logged in AND NOT requiring MFA
+  if (session && !needsMFA) return <Navigate to="/dashboard" replace />;
   return children;
 };
 

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { query } from '../db';
-import { supabase } from '../services/supabase';
+import { supabase, supabaseAdmin } from '../services/supabase';
 
 // Helper to check for missing envs, but supabase service handles logging now
 if (!process.env.SUPABASE_URL) {
@@ -35,7 +35,28 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
       return res.status(401).json({ error: 'Invalid token' });
     }
 
-    // 2. Resolve Tenant
+    // 2. Security Check: Enforce 2FA if enabled
+    // Decode JWT to check 'aal' (Authenticator Assurance Level)
+    const payloadIndex = token.indexOf('.') + 1;
+    const payloadEndIndex = token.lastIndexOf('.');
+    const payload = JSON.parse(Buffer.from(token.substring(payloadIndex, payloadEndIndex), 'base64').toString('utf-8'));
+    const currentAal = payload.aal; // 'aal1', 'aal2', etc.
+
+    // Check if user has verified 2FA factors
+    const { data: factorsData, error: factorsError } = await supabaseAdmin.auth.admin.mfa.listFactors({
+        userId: user.id
+    });
+
+    if (!factorsError && factorsData && factorsData.factors) {
+        const hasVerifiedFactor = factorsData.factors.some((f: any) => f.status === 'verified');
+        
+        if (hasVerifiedFactor && currentAal !== 'aal2') {
+             console.warn(`User ${user.email} has 2FA enabled but session is ${currentAal}. Denying access.`);
+             return res.status(403).json({ error: '2FA Verification Required', code: 'mfa_required' });
+        }
+    }
+
+    // 3. Resolve Tenant
     // Check if user exists in local DB
     const userRes = await query('SELECT id, tenant_id, role FROM users WHERE supabase_uid = $1', [user.id]);
     
