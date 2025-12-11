@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+
 import { supabase } from '../supabaseClient';
 import { Lock, Mail, ArrowRight, Loader } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -83,14 +83,8 @@ export const Login = () => {
                         </button>
                     </form>
 
-                    <div className="mt-8 text-center">
-                        <p className="text-gray-600">
-                            ¿No tienes cuenta?{' '}
-                            <Link to="/register" className="text-blue-600 font-semibold hover:text-blue-800 transition-colors">
-                                Regístrate gratis
-                            </Link>
-                        </p>
-                    </div>
+{/* Registration disabled for public users */}
+
                 </div>
             </div>
         </div>

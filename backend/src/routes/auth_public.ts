@@ -50,7 +50,13 @@ router.post('/login', async (req, res) => {
 // POST /register
 router.post('/register', async (req, res) => {
     try {
+        const adminSecret = req.headers['x-admin-secret'];
+        if (adminSecret !== process.env.ADMIN_SECRET) {
+            return res.status(403).json({ error: 'Forbidden: Admin Secret Required' });
+        }
+
         const { email, password, company_name, rnc, phone, address, type } = req.body;
+
 
         // Basic validation
         if (!email || !password || !company_name || !rnc) {

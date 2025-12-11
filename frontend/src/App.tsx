@@ -7,7 +7,7 @@ import { GlobalLoader } from './components/GlobalLoader';
 
 // Pages & Components
 import { Login } from './pages/Login';
-import { Register } from './pages/Register';
+
 import { Landing } from './pages/Landing';
 import { Pricing } from './pages/Pricing';
 import { Reports } from './pages/Reports';
@@ -53,7 +53,7 @@ function AppRoutes() {
       <Route path="/pricing" element={<PublicRoute><Pricing /></PublicRoute>} />
       
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-      <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+
 
       {/* Protected Dashboard Routes - Now prefixed with /dashboard or accessible via specific paths */}
       {/* Moving Root Dashboard to /dashboard */}
