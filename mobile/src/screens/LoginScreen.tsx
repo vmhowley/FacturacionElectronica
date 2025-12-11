@@ -22,8 +22,19 @@ const LoginScreen = () => {
                 email,
                 password
             });
+            // Check for License/Plan restrictions
+            const userData = res.data.user;
+            if (userData.plan_type === 'entrepreneur') {
+                Alert.alert(
+                    'Acceso Restringido', 
+                    'Tu plan "Emprendedor" no incluye acceso a la App Móvil. Actualiza al plan Pyme para disfrutar de esta funcionalidad.'
+                );
+                setLoading(false);
+                return;
+            }
+
             // Update global state
-            login(res.data.token, res.data.user);
+            login(res.data.token, userData);
             console.log('Login success:', res.data);
             // No alert needed, view will switch automatically
         } catch (error: any) {

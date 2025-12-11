@@ -84,4 +84,76 @@ router.put('/sequences/:id', async (req, res) => {
     }
 });
 
+import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Load env to ensure we have keys
+dotenv.config({ path: path.join(__dirname, '../../.env') });
+
+const supabaseUrl = process.env.SUPABASE_URL || '';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || ''; // Fallback for dev, but really needs Service Role for invites
+
+const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+
+// POST /api/settings/users/invite
+router.post('/users/invite', async (req, res) => {
+    try {
+        const { email, role } = req.body;
+        
+        if (!email || !role) {
+            return res.status(400).json({ error: 'Email and role are required' });
+        }
+
+        // 2. Check Plan Limits before inviting
+        // Get current user count and plan
+        const tenantRes = await query('SELECT plan_type FROM tenants WHERE id = $1', [req.tenantId]);
+        const planType = tenantRes.rows[0]?.plan_type || 'pyme';
+        
+        const countRes = await query('SELECT COUNT(*) as count FROM users WHERE tenant_id = $1', [req.tenantId]);
+        const currentCount = parseInt(countRes.rows[0].count);
+
+        let maxUsers = 1; // Default/Entrepreneur
+        if (planType === 'pyme') maxUsers = 3;
+        else if (planType === 'enterprise') maxUsers = 9999;
+
+        if (currentCount >= maxUsers) {
+            return res.status(403).json({ 
+                error: `Tu plan actual (${planType.toUpperCase()}) solo permite ${maxUsers} usuarios. Actualiza a Empresarial para ilimitados.` 
+            });
+        }
+
+        // 3. Invite via Supabase
+        const { data: authData, error: authError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email);
+
+        if (authError) {
+             console.error('Supabase Invite Error:', authError);
+             // If user already exists, we might just want to link them? 
+             // For now, let's treat it as error or check if it's "User already registered"
+             return res.status(400).json({ error: authError.message });
+        }
+
+        const supabaseUid = authData.user.id;
+
+        // 2. Add to Local DB linked to this tenant
+        // Check if user already exists in local DB
+        const existingUser = await query('SELECT id FROM users WHERE email = $1 OR supabase_uid = $2', [email, supabaseUid]);
+        
+        if (existingUser.rows.length > 0) {
+             return res.status(400).json({ error: 'User already exists in this system' });
+        }
+
+        await query(
+            'INSERT INTO users (tenant_id, username, password_hash, role, supabase_uid) VALUES ($1, $2, $3, $4, $5)',
+            [req.tenantId, email, 'supabase_managed', role, supabaseUid]
+        );
+
+        res.json({ success: true, message: 'User invited successfully' });
+
+    } catch (err: any) {
+        console.error('Invite Error:', err);
+        res.status(500).json({ error: 'Failed to invite user' });
+    }
+});
+
 export default router;

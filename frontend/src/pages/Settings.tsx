@@ -110,7 +110,7 @@ export const Settings: React.FC = () => {
 
                 {/* USERS TAB */}
                 {activeTab === 'users' && (
-                    <UserSettings users={users} />
+                    <UserSettings users={users} onRefresh={fetchAllData} />
                 )}
             </div>
         </div>

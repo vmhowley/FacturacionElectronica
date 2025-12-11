@@ -34,9 +34,26 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ error: error.message });
         }
 
+        // Fetch user and tenant info to return plan_type
+        const userRes = await query('SELECT tenant_id, role, username FROM users WHERE supabase_uid = $1', [data.user.id]);
+        let userDetails = null;
+        let planType = 'pyme'; // Default
+
+        if (userRes.rows.length > 0) {
+            userDetails = userRes.rows[0];
+            const tenantRes = await query('SELECT plan_type FROM tenants WHERE id = $1', [userDetails.tenant_id]);
+            if (tenantRes.rows.length > 0) {
+                planType = tenantRes.rows[0].plan_type;
+            }
+        }
+
         res.json({
             token: data.session.access_token,
-            user: data.user
+            user: {
+                ...data.user,
+                ...userDetails,
+                plan_type: planType
+            }
         });
     } catch (err: any) {
         console.error('Login error:', err);

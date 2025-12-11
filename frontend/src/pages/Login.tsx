@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { Lock, Mail, ArrowRight, Loader } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -8,14 +8,13 @@ export const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
 
-    const handleLogin = async (e: React.FormEvent) => {
+    const handleLogin = async (e: FormEvent) => {
         e.preventDefault();
         setLoading(true);
 
         try {
-            const { data, error } = await supabase.auth.signInWithPassword({
+            const { error } = await supabase.auth.signInWithPassword({
                 email,
                 password,
             });

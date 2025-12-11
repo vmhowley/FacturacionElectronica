@@ -15,55 +15,58 @@ export const Pricing: React.FC = () => {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {/* Free Plan */}
+                    {/* Emprendedor Plan */}
                     <PricingCard 
                         title="Emprendedor"
-                        price="Gratis"
-                        description="Para pequeños negocios que recién empiezan."
+                        price="RD$ 1,500"
+                        period="/ mes"
+                        description="Para pequeños negocios que facturan desde la web."
                         features={[
-                            "Hasta 50 facturas / mes",
+                            "Facturación Ilimitada",
                             "1 Usuario",
-                            "Facturas de Consumo (B02)",
+                            "Acceso Web (Dashboard)",
+                            "Facturas B01 y B02",
                             "Soporte por Email"
                         ]}
-                        buttonText="Crear Cuenta Gratis"
-                        buttonLink="/register?plan=free"
+                        buttonText="Empezar Ahora"
+                        buttonLink="/register?plan=entrepreneur"
                         highlight={false}
                     />
 
-                    {/* Pro Plan */}
+                    {/* Pyme Plan */}
                     <PricingCard 
-                        title="Pyme Pro"
-                        price="RD$ 1,500"
+                        title="Pyme"
+                        price="RD$ 3,500"
                         period="/ mes"
-                        description="Todo lo necesario para crecer sin límites."
+                        description="El plan ideal para negocios en crecimiento."
                         features={[
-                            "Facturas Ilimitadas",
-                            "3 Usuarios",
-                            "Crédito Fiscal (B01) + B02",
-                            "Reportes de Inventario",
+                            "Todo lo de Emprendedor",
+                            "3 Usuarios (Contador, Vendedor)",
+                            "App Móvil (iOS & Android)",
+                            "Reportes Básicos",
                             "Soporte Prioritario"
                         ]}
-                        buttonText="Empezar Ahora"
-                        buttonLink="/register?plan=pro"
+                        buttonText="Prueba Gratis 14 Días"
+                        buttonLink="/register?plan=pyme"
                         highlight={true}
                     />
 
                     {/* Enterprise Plan */}
                     <PricingCard 
                         title="Empresarial"
-                        price="RD$ 4,500"
+                        price="RD$ 6,500"
                         period="/ mes"
-                        description="Para empresas con alto volumen de transacciones."
+                        description="Para empresas que necesitan control total."
                         features={[
-                            "Todo lo de Pro",
+                            "Todo lo de Pyme",
                             "Usuarios Ilimitados",
-                            "API de Integración",
                             "Múltiples Sucursales",
+                            "Firma Digital Incluida",
+                            "API de Integración",
                             "Gerente de Cuenta Dedicado"
                         ]}
                         buttonText="Contactar Ventas"
-                        buttonLink="/contact" // Placeholder
+                        buttonLink="/contact"
                         highlight={false}
                     />
                 </div>

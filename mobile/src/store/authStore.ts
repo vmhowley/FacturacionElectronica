@@ -6,6 +6,7 @@ interface User {
     role: string;
     username: string;
     tenant_id: string;
+    plan_type?: string;
 }
 
 interface AuthState {

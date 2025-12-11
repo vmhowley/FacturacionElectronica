@@ -1,5 +1,6 @@
-import { Users } from 'lucide-react';
-import React from 'react';
+import { UserPlus } from 'lucide-react';
+import React, { useState } from 'react';
+import { InviteUserModal } from './InviteUserModal'; // Ensure this path is correct
 
 interface User {
     id: number;
@@ -10,15 +11,29 @@ interface User {
 
 interface UserSettingsProps {
     users: User[];
+    onRefresh?: () => void; // Add callback to refresh list
 }
 
-export const UserSettings: React.FC<UserSettingsProps> = ({ users }) => {
+export const UserSettings: React.FC<UserSettingsProps> = ({ users, onRefresh }) => {
+    const [isInviteOpen, setIsInviteOpen] = useState(false);
+
     return (
         <div>
+            <InviteUserModal 
+                isOpen={isInviteOpen} 
+                onClose={() => setIsInviteOpen(false)} 
+                onSuccess={() => {
+                    if (onRefresh) onRefresh();
+                }}
+            />
+
             <div className="flex justify-between items-center mb-6">
                 <h3 className="font-semibold text-gray-700">Usuarios Activos</h3>
-                <button disabled className="text-gray-400 text-sm border px-3 py-1.5 rounded-lg flex items-center gap-2 cursor-not-allowed">
-                    <Users size={16} /> Agregar Usuario (Proximamente)
+                <button 
+                    onClick={() => setIsInviteOpen(true)}
+                    className="bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-blue-700 transition-all shadow-sm shadow-blue-200"
+                >
+                    <UserPlus size={18} /> Agregar Usuario
                 </button>
             </div>
             <div className="overflow-x-auto">

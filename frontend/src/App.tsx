@@ -21,9 +21,10 @@ import { InvoiceList } from './components/InvoiceList';
 import { InvoiceDetails } from './components/InvoiceDetails';
 import { ProductForm } from './components/ProductForm';
 import { ProductList } from './components/ProductList';
+import type { ReactNode } from 'react';
 
 // Protected Route Component
-const ProtectedRoute = ({ children, roles }: { children: JSX.Element, roles?: string[] }) => {
+const ProtectedRoute = ({ children, roles }: { children: ReactNode, roles?: string[] }) => {
   const { session, loading, profile } = useAuth(); // Assuming profile is loaded
 
   if (loading) return <div className="min-h-screen flex items-center justify-center">Cargando...</div>;
@@ -37,7 +38,7 @@ const ProtectedRoute = ({ children, roles }: { children: JSX.Element, roles?: st
 };
 
 // Route that redirects to Dashboard if logged in, otherwise renders children (Public Page)
-const PublicRoute = ({ children }: { children: JSX.Element }) => {
+const PublicRoute = ({ children }: { children: ReactNode }) => {
   const { session, loading } = useAuth();
   if (loading) return null; // Or loader
   if (session) return <Navigate to="/dashboard" replace />;
