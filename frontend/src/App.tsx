@@ -25,12 +25,17 @@ import type { ReactNode } from 'react';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, roles }: { children: ReactNode, roles?: string[] }) => {
-  const { session, loading, profile, needsMFA } = useAuth(); // Assuming profile is loaded
+  const { session, loading, profile, needsMFA } = useAuth();
 
   if (loading) return <div className="min-h-screen flex items-center justify-center">Cargando...</div>;
+  
+  // 1. Not Logged In -> Go to Login
   if (!session) return <Navigate to="/login" replace />;
-  if (needsMFA) return <Navigate to="/login" replace />; // Redirect to login for MFA verification
+  
+  // 2. Logged In but Needs MFA -> Go to Login (where MFA form is shown)
+  if (needsMFA) return <Navigate to="/login" replace />;
 
+  // 3. Role Check
   if (roles && profile && !roles.includes(profile.role)) {
      return <div className="p-10 text-center text-red-500">Acceso Denegado: Permisos insuficientes (Rol: {profile.role})</div>;
   }
@@ -41,9 +46,18 @@ const ProtectedRoute = ({ children, roles }: { children: ReactNode, roles?: stri
 // Route that redirects to Dashboard if logged in, otherwise renders children (Public Page)
 const PublicRoute = ({ children }: { children: ReactNode }) => {
   const { session, loading, needsMFA } = useAuth();
-  if (loading) return null; // Or loader
-  // Only redirect if logged in AND NOT requiring MFA
-  if (session && !needsMFA) return <Navigate to="/dashboard" replace />;
+  
+  if (loading) return null; 
+
+  // If user is logged in, usually redirect to Dashboard.
+  // BUT if they need MFA, they must stay on the public page (Login) to enter code.
+  // The Login page itself handles the "Show MFA Form" vs "Show Login Form" logic.
+  if (session && !needsMFA) {
+      return <Navigate to="/dashboard" replace />;
+  }
+
+  // If session exists AND needsMFA is true, we allow rendering "children" (which is <Login/>)
+  // The Login component will see needsMFA=true and urge the user to enter code.
   return children;
 };
 

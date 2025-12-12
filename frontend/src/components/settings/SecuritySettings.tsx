@@ -154,7 +154,7 @@ export const SecuritySettings: React.FC = () => {
                                 {secret && (
                                     <div className="text-center">
                                         <p className="text-xs text-gray-400 mb-1">¿No puedes escanear?</p>
-                                        <code className="bg-gray-100 px-2 py-1 rounded text-xs select-all text-gray-700 font-mono break-all max-w-[160px] block">
+                                        <code className="bg-gray-100 px-2 py-1 rounded text-xs select-all text-gray-700 font-mono break-all max-w-[160px] block border border-gray-200">
                                             {secret}
                                         </code>
                                     </div>

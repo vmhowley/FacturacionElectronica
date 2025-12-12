@@ -42,8 +42,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         try {
             const res = await axios.get('/api/auth/me');
             setProfile(res.data);
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error fetching profile', err);
+            // If the error is MFA required (403), we should still let the app load 
+            // so the user can be redirected to the MFA verification screen.
+            // DO NOT set profile to null if it's just an MFA block, 
+            // but effectively we can't get profile data without MFA.
+            
+            // However, to stop the "Loading..." spinner, we must ensure 
+            // this function doesn't crash effectively.
+            if (err.response?.status === 403 && err.response?.data?.code === 'mfa_required') {
+                // Expected behavior when MFA is needed.
+                // We set needsMFA to true (already done by checkMFA usually) 
+                setNeedsMFA(true);
+            }
         }
     };
 

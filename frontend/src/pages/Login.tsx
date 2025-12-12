@@ -69,9 +69,16 @@ export const Login = () => {
             if (verify.error) throw verify.error;
 
             toast.success('Verificación exitosa');
-            // Successful verification updates session to AAL2
-            // AuthContext will detect change and set needsMFA=false
-            // App will redirect to Dashboard
+            
+            // Force a full page reload or aggressively refresh session to clear stale state
+            // Supabase client should auto-update, but explicit refresh helps
+            const { error: sessionError } = await supabase.auth.getSession();
+            if (sessionError) throw sessionError;
+            
+            // Critical: The backend middleware checks the Token's AAL claim.
+            // After verification, Supabase *should* have refreshed the token.
+            // We force a reload to ensure all Contexts re-hydrate with the new clean token.
+            window.location.href = '/dashboard';
             
         } catch (err: any) {
             console.error(err);
