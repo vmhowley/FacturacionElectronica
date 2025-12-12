@@ -38,95 +38,125 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [loading, setLoading] = useState(true);
     const [needsMFA, setNeedsMFA] = useState(false);
 
+    const checkMFA = async (currentSession: Session | null) => {
+        if (!currentSession) {
+            setNeedsMFA(false);
+            return;
+        }
+
+        try {
+            const { data, error } = await supabase.auth.mfa.listFactors();
+            if (error) {
+                console.error("Error listing factors checking MFA", error);
+                return;
+            }
+
+            const verifiedFactors = data.totp.filter(f => f.status === 'verified');
+            const hasVerifiedFactors = verifiedFactors.length > 0;
+
+            const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+            const currentLevel = aalData?.currentLevel;
+
+            if (hasVerifiedFactors && currentLevel === 'aal1') {
+                console.log("User has MFA enabled but is on AAL1. MFA Required.");
+                setNeedsMFA(true);
+            } else {
+                setNeedsMFA(false);
+            }
+
+        } catch (err) {
+            console.error("Error checking MFA", err);
+        }
+    };
+
     const fetchProfile = async () => {
         try {
             const res = await axios.get('/api/auth/me');
             setProfile(res.data);
         } catch (err: any) {
             console.error('Error fetching profile', err);
-            // If the error is MFA required (403), we should still let the app load 
-            // so the user can be redirected to the MFA verification screen.
-            // DO NOT set profile to null if it's just an MFA block, 
-            // but effectively we can't get profile data without MFA.
-            
-            // However, to stop the "Loading..." spinner, we must ensure 
-            // this function doesn't crash effectively.
-            if (err.response?.status === 403 && err.response?.data?.code === 'mfa_required') {
-                // Expected behavior when MFA is needed.
-                // We set needsMFA to true (already done by checkMFA usually) 
-                setNeedsMFA(true);
+            if (err.response?.status === 401 || err.response?.status === 403) {
+                 // Don't clear session immediately to avoid flicker
             }
         }
     };
 
     useEffect(() => {
-        // Helper to safely check MFA
-        const checkMFA = async (session: Session | null) => {
-            if (!session) return false;
+        let mounted = true;
+
+        const initializeAuth = async () => {
             try {
-                if (!supabase.auth.mfa) {
-                   console.warn("Supabase MFA API not available");
-                   return false;
-                }
-                const { data: mfaData, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-                if (error) {
-                    console.error("MFA Check Error:", error);
-                    return false;
-                }
-                if (mfaData && mfaData.currentLevel === 'aal1' && mfaData.nextLevel === 'aal2') {
-                    return true;
+                // Get initial session
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (!mounted) return;
+
+                if (session) {
+                     setSession(session);
+                     setUser(session.user);
+                     
+                     // Run parallel
+                     fetchProfile();
+                     checkMFA(session);
+                } else {
+                     setSession(null);
+                     setUser(null);
+                     setProfile(null);
                 }
             } catch (err) {
-                console.error("MFA Check Crash:", err);
+                console.error("Auth Initialization Error:", err);
+            } finally {
+                if (mounted) setLoading(false);
             }
-            return false;
         };
 
-        // Get initial session
-        supabase.auth.getSession().then(async ({ data: { session } }) => {
-            setSession(session);
-            setUser(session?.user ?? null);
-            
-            if (session) {
-                 const needs2FA = await checkMFA(session);
-                 setNeedsMFA(needs2FA);
-                 await fetchProfile();
-            } else {
-                 setNeedsMFA(false);
-                 setProfile(null);
-            }
-            setLoading(false);
-        }).catch(err => {
-            console.error("Session restore error:", err);
-            setLoading(false);
-        });
+        initializeAuth();
+        
+        // Safety timeout
+        const timeoutId = setTimeout(() => {
+             if (mounted && loading) {
+                 console.warn("Auth initialization timed out, forcing load completion.");
+                 setLoading(false);
+             }
+        }, 3000);
 
-        // Listen for changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-            setSession(session);
-            setUser(session?.user ?? null);
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (!mounted) return;
             
-            if (session) {
-                const needs2FA = await checkMFA(session);
-                setNeedsMFA(needs2FA);
-                // We don't await here because onAuthStateChange is an event listener
-                // and we don't want to block UI updates if profile takes time,
-                // BUT for consistency we can manage loading if needed.
-                // However, the initial load is critical.
-                fetchProfile(); 
-            } else {
+            if (event === 'SIGNED_OUT') {
+                setSession(null);
+                setUser(null);
                 setProfile(null);
                 setNeedsMFA(false);
+                setLoading(false);
+                return;
             }
-            setLoading(false);
+            
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                 setSession(session);
+                 setUser(session?.user ?? null);
+                 
+                 if (session) {
+                     fetchProfile();
+                     checkMFA(session);
+                 }
+                 if (mounted) setLoading(false);
+            }
         });
 
-        return () => subscription.unsubscribe();
+        return () => {
+            mounted = false;
+            clearTimeout(timeoutId);
+            subscription.unsubscribe();
+        };
     }, []);
 
     const signOut = async () => {
         await supabase.auth.signOut();
         setProfile(null);
+        setSession(null);
+        setUser(null);
+        setNeedsMFA(false);
     };
 
     return (

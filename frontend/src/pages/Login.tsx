@@ -1,5 +1,4 @@
 import { useState, type FormEvent, useEffect } from 'react';
-
 import { supabase } from '../supabaseClient';
 import { Lock, Mail, ArrowRight, Loader, ShieldCheck, KeyRound } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -11,8 +10,6 @@ export const Login = () => {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [verifyCode, setVerifyCode] = useState('');
-
-    // Ensure state matches context
     const [showMFA, setShowMFA] = useState(false);
 
     useEffect(() => {
@@ -37,7 +34,7 @@ export const Login = () => {
                     : 'Error al iniciar sesión');
             } else {
                 toast.success('¡Bienvenido!');
-                // Check if MFA is needed is handled by AuthContext -> App -> Login re-render with needsMFA=true
+                // AuthContext will handle state change to needsMFA if required
             }
         } catch (error) {
             toast.error('Ocurrió un error inesperado');
@@ -70,19 +67,16 @@ export const Login = () => {
 
             toast.success('Verificación exitosa');
             
-            // Force a full page reload or aggressively refresh session to clear stale state
-            // Supabase client should auto-update, but explicit refresh helps
+            // Force session refresh
             const { error: sessionError } = await supabase.auth.getSession();
             if (sessionError) throw sessionError;
             
-            // Critical: The backend middleware checks the Token's AAL claim.
-            // After verification, Supabase *should* have refreshed the token.
-            // We force a reload to ensure all Contexts re-hydrate with the new clean token.
+            // Redirect to dashboard to clear Login component state logic
             window.location.href = '/dashboard';
             
         } catch (err: any) {
             console.error(err);
-            toast.error('Código incorrecto o expirado');
+            toast.error(err.message || 'Código incorrecto');
         } finally {
             setLoading(false);
         }

@@ -51,13 +51,10 @@ const PublicRoute = ({ children }: { children: ReactNode }) => {
 
   // If user is logged in, usually redirect to Dashboard.
   // BUT if they need MFA, they must stay on the public page (Login) to enter code.
-  // The Login page itself handles the "Show MFA Form" vs "Show Login Form" logic.
   if (session && !needsMFA) {
       return <Navigate to="/dashboard" replace />;
   }
 
-  // If session exists AND needsMFA is true, we allow rendering "children" (which is <Login/>)
-  // The Login component will see needsMFA=true and urge the user to enter code.
   return children;
 };
 

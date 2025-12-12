@@ -29,7 +29,7 @@ export const SecuritySettings: React.FC = () => {
             }
         } catch (err: any) {
             console.error(err);
-            setStatus('disabled'); // Default to disabled on error to allow retry
+            setStatus('disabled');
         }
     };
 
@@ -43,13 +43,10 @@ export const SecuritySettings: React.FC = () => {
 
             setEnrollmentId(data.id);
             
-            // Construct a custom URI to ensure the correct Issuer name is displayed
-            // instead of 'localhost' or default values.
             const secret = (data.totp as any).secret;
             const issuer = 'DigitBill';
             const account = user?.email || 'Usuario';
             
-            // Format: otpauth://totp/Issuer:Account?secret=SECRET&issuer=Issuer
             const customUri = `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(account)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}`;
             
             setQrCode(customUri);

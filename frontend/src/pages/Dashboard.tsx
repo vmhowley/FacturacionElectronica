@@ -3,6 +3,7 @@ import { FileText, TrendingUp, Users, AlertCircle, Plus, ArrowRight } from 'luci
 import { Link } from 'react-router-dom';
 import axios from '../api';
 
+// Dashboard handles its own loading state for data fetching.
 export const Dashboard = () => {
     const [stats, setStats] = useState({
         totalRevenue: 0,

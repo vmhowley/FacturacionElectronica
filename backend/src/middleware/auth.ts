@@ -36,7 +36,8 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
     }
 
     // 2. Security Check: Enforce 2FA if enabled
-    // Decode JWT to check 'aal' (Authenticator Assurance Level)
+    // Note: Temporarily disabled 2FA enforcement as requested by user.
+    /*
     const payloadIndex = token.indexOf('.') + 1;
     const payloadEndIndex = token.lastIndexOf('.');
     const payload = JSON.parse(Buffer.from(token.substring(payloadIndex, payloadEndIndex), 'base64').toString('utf-8'));
@@ -55,6 +56,7 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
              return res.status(403).json({ error: '2FA Verification Required', code: 'mfa_required' });
         }
     }
+    */
 
     // 3. Resolve Tenant
     // Check if user exists in local DB
