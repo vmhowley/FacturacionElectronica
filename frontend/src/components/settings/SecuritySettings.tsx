@@ -35,18 +35,27 @@ export const SecuritySettings: React.FC = () => {
 
     const startEnrollment = async () => {
         try {
+            const { data: { user } } = await supabase.auth.getUser();
             const { data, error } = await supabase.auth.mfa.enroll({
                 factorType: 'totp',
             });
             if (error) throw error;
 
             setEnrollmentId(data.id);
-            // Use the URI for the component to generate the QR code
-            setQrCode(data.totp.uri);
-            // Store secret if available (we might need to cast or check type as SDK typings vary)
-            // But usually data.totp.secret is available
-            if ('secret' in data.totp) {
-                 setSecret((data.totp as any).secret);
+            
+            // Construct a custom URI to ensure the correct Issuer name is displayed
+            // instead of 'localhost' or default values.
+            const secret = (data.totp as any).secret;
+            const issuer = 'DigitBill';
+            const account = user?.email || 'Usuario';
+            
+            // Format: otpauth://totp/Issuer:Account?secret=SECRET&issuer=Issuer
+            const customUri = `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(account)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}`;
+            
+            setQrCode(customUri);
+            
+            if (secret) {
+                 setSecret(secret);
             }
         } catch (err: any) {
             toast.error(err.message);
