@@ -24,5 +24,21 @@
 {"invoiceId":17,"level":"info","message":"Invoice created","tenantId":10,"timestamp":"2025-12-09T20:53:03.371Z","total":1652000}
 {"invoiceId":18,"level":"info","message":"Invoice created","tenantId":10,"timestamp":"2025-12-09T20:54:30.715Z","total":2065000}
 {"invoiceId":19,"level":"info","message":"Invoice created","tenantId":10,"timestamp":"2025-12-10T14:34:09.044Z","total":0}
+<<<<<<< HEAD
 {"invoiceId":36,"level":"info","message":"Invoice created","tenantId":15,"timestamp":"2025-12-27T13:34:12.535Z","total":590}
 {"error":{},"level":"error","message":"Error generating NCF","tenantId":15,"timestamp":"2025-12-27T13:45:32.405Z","typeCode":"31"}
+=======
+{"error":{},"level":"error","message":"Error generating NCF","tenantId":14,"timestamp":"2025-12-30T15:18:34.760Z","typeCode":"31"}
+{"error":{},"level":"error","message":"Error generating NCF","tenantId":15,"timestamp":"2025-12-30T15:19:08.741Z","typeCode":"31"}
+{"error":{},"level":"error","message":"Error generating NCF","tenantId":15,"timestamp":"2025-12-30T15:27:19.081Z","typeCode":"31"}
+{"invoiceId":37,"level":"info","message":"Invoice created","tenantId":15,"timestamp":"2025-12-30T15:29:29.033Z","total":590}
+{"error":{},"level":"error","message":"Error generating NCF","tenantId":15,"timestamp":"2025-12-30T15:40:27.481Z","typeCode":"31"}
+{"error":{},"level":"error","message":"Error generating NCF","tenantId":15,"timestamp":"2025-12-30T15:43:38.854Z","typeCode":"31"}
+{"error":{},"level":"error","message":"Error generating NCF","tenantId":15,"timestamp":"2025-12-30T15:58:16.026Z","typeCode":"31"}
+{"error":{},"level":"error","message":"Error generating NCF","tenantId":15,"timestamp":"2025-12-30T16:03:38.550Z","typeCode":"31"}
+{"error":{},"level":"error","message":"Error generating NCF","tenantId":15,"timestamp":"2025-12-30T16:03:51.207Z","typeCode":"31"}
+{"error":{},"level":"error","message":"Error issuing invoice immediately","timestamp":"2025-12-30T16:03:51.208Z"}
+{"error":{},"level":"error","message":"Error generating NCF","tenantId":15,"timestamp":"2025-12-30T16:04:41.985Z","typeCode":"31"}
+{"error":{},"level":"error","message":"Error issuing invoice immediately","timestamp":"2025-12-30T16:04:41.988Z"}
+{"invoiceId":40,"level":"info","message":"Payment recorded","paymentId":1,"timestamp":"2025-12-30T16:16:06.162Z"}
+>>>>>>> e13c1c56369376f9cf75487492a8655b0820a6ba

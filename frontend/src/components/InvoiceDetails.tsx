@@ -1,6 +1,6 @@
 import { ArrowLeft, Printer, ShoppingCart } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
+import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import axios from '../api';
 
@@ -40,10 +40,10 @@ export const InvoiceDetails: React.FC = () => {
                     axios.get(`/api/invoices/${id}`),
                     axios.get('/api/settings/company')
                 ]);
-                
+
                 setInvoice(invoiceRes.data);
                 setCompany(companyRes.data);
-                
+
                 const invData = invoiceRes.data;
                 // Parse QR if exists
                 if ((invData.status === 'signed' || invData.status === 'sent') && invData.xml_path?.includes('<UrlQR>')) {
@@ -63,7 +63,7 @@ export const InvoiceDetails: React.FC = () => {
     if (!invoice) return <div className="p-10 text-center text-red-500">Factura no encontrada</div>;
 
     const getTypeName = (code: string) => {
-        switch(code) {
+        switch (code) {
             case '31': return 'Factura de Crédito Fiscal';
             case '32': return 'Factura de Consumo';
             case '33': return 'Nota de Crédito';
@@ -81,7 +81,7 @@ export const InvoiceDetails: React.FC = () => {
                 <Link to="/" className="flex items-center text-gray-500 hover:text-gray-800">
                     <ArrowLeft size={18} className="mr-2" /> Volver
                 </Link>
-                <button 
+                <button
                     onClick={() => window.print()}
                     className="flex items-center gap-2 bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700"
                 >
@@ -94,8 +94,8 @@ export const InvoiceDetails: React.FC = () => {
                 <div className="flex justify-between items-start border-b border-gray-100 pb-8 mb-8">
                     <div>
                         <div className="flex items-center gap-2 text-blue-600 mb-2">
-                           <ShoppingCart className="w-6 h-6" />
-                           <span className="font-bold text-xl tracking-tight">{company?.name || 'Cargando...'}</span>
+                            <ShoppingCart className="w-6 h-6" />
+                            <span className="font-bold text-xl tracking-tight">{company?.name || 'Cargando...'}</span>
                         </div>
                         <p className="text-sm text-gray-500">{company?.address}</p>
                         <p className="text-sm text-gray-500">RNC: {company?.rnc}</p>
@@ -104,7 +104,10 @@ export const InvoiceDetails: React.FC = () => {
                     <div className="text-right">
                         <h1 className="text-2xl font-bold text-gray-900">{getTypeName(invoice.type_code)}</h1>
                         {invoice.e_ncf ? (
-                             <p className="text-lg font-mono text-gray-700 mt-1">{invoice.e_ncf}</p>
+                            <p className="text-lg font-mono text-gray-700 mt-1">
+                                <span className="text-xs text-gray-400 mr-2">{company?.electronic_invoicing !== false ? 'e-NCF' : 'NCF'}:</span>
+                                {invoice.e_ncf}
+                            </p>
                         ) : (
                             <span className="inline-block bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded mt-1">Borrador</span>
                         )}
@@ -146,7 +149,7 @@ export const InvoiceDetails: React.FC = () => {
                 {/* Footer / Totals */}
                 <div className="flex justify-between items-end border-t border-gray-100 pt-8">
                     <div>
-                        {qrValue && (
+                        {qrValue && company?.electronic_invoicing !== false && (
                             <div className="flex flex-col items-center">
                                 <QRCodeSVG value={qrValue} size={128} />
                                 <p className="text-[10px] text-gray-400 mt-2 uppercase tracking-widest">Código QR e-CF</p>
@@ -154,7 +157,7 @@ export const InvoiceDetails: React.FC = () => {
                         )}
                     </div>
                     <div className="w-64 space-y-3">
-                         <div className="flex justify-between text-gray-600">
+                        <div className="flex justify-between text-gray-600">
                             <span>Subtotal</span>
                             <span>RD$ {parseFloat(invoice.net_total).toFixed(2)}</span>
                         </div>

@@ -9,4 +9,18 @@
 {"error":{"code":"23503","constraint":"invoice_items_product_id_fkey","detail":"Key (product_id)=(0) is not present in table \"products\".","file":"ri_triggers.c","length":286,"line":"2599","name":"error","routine":"ri_ReportViolation","schema":"public","severity":"ERROR","table":"invoice_items"},"level":"error","message":"Error creating invoice","timestamp":"2025-12-05T18:54:54.569Z"}
 {"error":{"code":"23503","constraint":"invoice_items_product_id_fkey","detail":"Key (product_id)=(0) is not present in table \"products\".","file":"ri_triggers.c","length":286,"line":"2599","name":"error","routine":"ri_ReportViolation","schema":"public","severity":"ERROR","table":"invoice_items"},"level":"error","message":"Error creating invoice","timestamp":"2025-12-05T18:56:07.407Z"}
 {"error":{"code":"23503","constraint":"invoice_items_product_id_fkey","detail":"Key (product_id)=(0) is not present in table \"products\".","file":"ri_triggers.c","length":286,"line":"2599","name":"error","routine":"ri_ReportViolation","schema":"public","severity":"ERROR","table":"invoice_items"},"level":"error","message":"Error creating invoice","timestamp":"2025-12-05T18:56:24.609Z"}
+<<<<<<< HEAD
 {"error":{},"level":"error","message":"Error generating NCF","tenantId":15,"timestamp":"2025-12-27T13:45:32.405Z","typeCode":"31"}
+=======
+{"error":{},"level":"error","message":"Error generating NCF","tenantId":14,"timestamp":"2025-12-30T15:18:34.760Z","typeCode":"31"}
+{"error":{},"level":"error","message":"Error generating NCF","tenantId":15,"timestamp":"2025-12-30T15:19:08.741Z","typeCode":"31"}
+{"error":{},"level":"error","message":"Error generating NCF","tenantId":15,"timestamp":"2025-12-30T15:27:19.081Z","typeCode":"31"}
+{"error":{},"level":"error","message":"Error generating NCF","tenantId":15,"timestamp":"2025-12-30T15:40:27.481Z","typeCode":"31"}
+{"error":{},"level":"error","message":"Error generating NCF","tenantId":15,"timestamp":"2025-12-30T15:43:38.854Z","typeCode":"31"}
+{"error":{},"level":"error","message":"Error generating NCF","tenantId":15,"timestamp":"2025-12-30T15:58:16.026Z","typeCode":"31"}
+{"error":{},"level":"error","message":"Error generating NCF","tenantId":15,"timestamp":"2025-12-30T16:03:38.550Z","typeCode":"31"}
+{"error":{},"level":"error","message":"Error generating NCF","tenantId":15,"timestamp":"2025-12-30T16:03:51.207Z","typeCode":"31"}
+{"error":{},"level":"error","message":"Error issuing invoice immediately","timestamp":"2025-12-30T16:03:51.208Z"}
+{"error":{},"level":"error","message":"Error generating NCF","tenantId":15,"timestamp":"2025-12-30T16:04:41.985Z","typeCode":"31"}
+{"error":{},"level":"error","message":"Error issuing invoice immediately","timestamp":"2025-12-30T16:04:41.988Z"}
+>>>>>>> e13c1c56369376f9cf75487492a8655b0820a6ba
