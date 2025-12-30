@@ -172,78 +172,8 @@ router.post("/", async (req, res) => {
 router.post("/:id/sign", async (req, res) => {
   try {
     const { id } = req.params;
-<<<<<<< HEAD
-    // Fetch invoice data
-    const invRes = await query('SELECT * FROM invoices WHERE id = $1', [id]);
-    if (invRes.rows.length === 0) return res.status(404).json({ error: 'Invoice not found' });
-    const invoice = invRes.rows[0];
-    
-    // Fetch client and items
-    const clientRes = await query('SELECT * FROM clients WHERE id = $1', [invoice.client_id]);
-    const itemsRes = await query('SELECT * FROM invoice_items WHERE invoice_id = $1', [id]);
-    
-    // Fetch tenant info for Emisor
-    const tenantRes = await query('SELECT name, rnc FROM tenants WHERE id = $1', [invoice.tenant_id]);
-    const tenant = tenantRes.rows[0];
-
-    // Load company config (still needed for cert path, although cert usually should be in tenant or sec storage)
-    const { getCompanyConfig } = require('../services/configService');
-    const config = await getCompanyConfig(invoice.tenant_id);
-
-    // Determine NCF
-    let ncf = invoice.e_ncf;
-    if (!ncf) {
-      ncf = await getNextNCF(invoice.tenant_id, invoice.type_code || '31');
-      // Persist NCF immediately to avoid sequence gaps if signing fails later
-      await query('UPDATE invoices SET e_ncf = $1 WHERE id = $2', [ncf, id]);
-    }
-
-    // Build data object for XML
-    const xmlData = {
-      emisor: { rnc: tenant.rnc || config.company_rnc, nombre: tenant.name || config.company_name },
-      receptor: { rnc: clientRes.rows[0].rnc_ci, nombre: clientRes.rows[0].name },
-      fecha: new Date().toISOString(),
-      tipo: invoice.type_code || '31', 
-      encf: ncf,
-      items: itemsRes.rows.map((it: any) => ({
-        descripcion: 'Product ' + it.product_id,
-        cantidad: it.quantity,
-        precio: it.unit_price,
-        monto: it.line_amount,
-        impuesto: it.line_tax,
-        itbis_rate: '18' // Simplification
-      })),
-      subtotal: invoice.net_total,
-      impuestototal: invoice.tax_total,
-      total: invoice.total,
-      fecha_vencimiento: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days default
-      metodo_pago: '01' // Cash
-    };
-
-    const xml = buildECFXML(xmlData as any); // Cast for now
-    
-    // Sign
-    const { loadP12, loadP12FromBuffer, signXml } = require('../services/signatureService');
-    
-    let keyPair;
-    if (config.certificate_content) {
-      const buffer = Buffer.from(config.certificate_content, 'base64');
-      keyPair = loadP12FromBuffer(buffer, config.certificate_password);
-    } else {
-      keyPair = loadP12(config.certificate_path, config.certificate_password);
-    }
-
-    const { privateKeyPem, certPem } = keyPair;
-    const signedXml = signXml(xml, privateKeyPem, certPem);
-    
-    // Update status and save XML content
-    await query('UPDATE invoices SET status=$1, xml_path=$2, e_ncf=$3 WHERE id=$4', ['signed', signedXml, ncf, id]);
-    
-    res.json({ message: 'Invoice signed successfully', xml: signedXml });
-=======
     const result = await issueInvoice(req.tenantId!, parseInt(id));
     res.json({ message: "Invoice processed successfully", ...result });
->>>>>>> e13c1c56369376f9cf75487492a8655b0820a6ba
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: (err as Error).message });
