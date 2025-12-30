@@ -1,13 +1,11 @@
-import { ArrowRight, KeyRound, Loader, Lock, Mail, ShieldCheck } from 'lucide-react';
-import { useEffect, useState, type FormEvent } from 'react';
-import { toast } from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useState, type FormEvent, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import { Lock, Mail, ArrowRight, Loader, ShieldCheck, KeyRound } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 
 export const Login = () => {
-    const navigate = useNavigate();
-    const { needsMFA, session } = useAuth();
+    const { needsMFA } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -15,9 +13,6 @@ export const Login = () => {
     const [showMFA, setShowMFA] = useState(false);
 
     useEffect(() => {
-        if (session) {
-            navigate('/dashboard');
-        }
         if (needsMFA) {
             setShowMFA(true);
         }
@@ -34,12 +29,11 @@ export const Login = () => {
             });
 
             if (error) {
-                toast.error(error.message === 'Invalid login credentials'
-                    ? 'Credenciales incorrectas'
+                toast.error(error.message === 'Invalid login credentials' 
+                    ? 'Credenciales incorrectas' 
                     : 'Error al iniciar sesión');
             } else {
                 toast.success('¡Bienvenido!');
-                navigate('/dashboard');
                 // AuthContext will handle state change to needsMFA if required
             }
         } catch (error) {
@@ -72,14 +66,14 @@ export const Login = () => {
             if (verify.error) throw verify.error;
 
             toast.success('Verificación exitosa');
-
+            
             // Force session refresh
             const { error: sessionError } = await supabase.auth.getSession();
             if (sessionError) throw sessionError;
-
+            
             // Redirect to dashboard to clear Login component state logic
             window.location.href = '/dashboard';
-
+            
         } catch (err: any) {
             console.error(err);
             toast.error(err.message || 'Código incorrecto');
@@ -93,7 +87,7 @@ export const Login = () => {
             <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden">
                 <div className="p-8">
                     {!showMFA ? (
-                        <>
+                         <>
                             <div className="text-center mb-8">
                                 <h2 className="text-3xl font-bold text-gray-900">Bienvenido de nuevo</h2>
                                 <p className="text-gray-500 mt-2">Ingresa a tu cuenta para gestionar tu facturación.</p>
@@ -174,7 +168,7 @@ export const Login = () => {
                                 >
                                     {loading ? <Loader className="animate-spin" size={20} /> : 'Verificar'}
                                 </button>
-
+                                
                                 <button
                                     type="button"
                                     onClick={async () => await supabase.auth.signOut()}
@@ -186,7 +180,7 @@ export const Login = () => {
                         </>
                     )}
 
-                    {/* Registration disabled for public users */}
+{/* Registration disabled for public users */}
 
                 </div>
             </div>

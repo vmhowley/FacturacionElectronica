@@ -25,6 +25,7 @@
 {"invoiceId":18,"level":"info","message":"Invoice created","tenantId":10,"timestamp":"2025-12-09T20:54:30.715Z","total":2065000}
 {"invoiceId":19,"level":"info","message":"Invoice created","tenantId":10,"timestamp":"2025-12-10T14:34:09.044Z","total":0}
 <<<<<<< HEAD
+<<<<<<< HEAD
 {"invoiceId":36,"level":"info","message":"Invoice created","tenantId":15,"timestamp":"2025-12-27T13:34:12.535Z","total":590}
 {"error":{},"level":"error","message":"Error generating NCF","tenantId":15,"timestamp":"2025-12-27T13:45:32.405Z","typeCode":"31"}
 =======
@@ -42,3 +43,5 @@
 {"error":{},"level":"error","message":"Error issuing invoice immediately","timestamp":"2025-12-30T16:04:41.988Z"}
 {"invoiceId":40,"level":"info","message":"Payment recorded","paymentId":1,"timestamp":"2025-12-30T16:16:06.162Z"}
 >>>>>>> e13c1c56369376f9cf75487492a8655b0820a6ba
+=======
+>>>>>>> parent of 0e146c6 (New modules)

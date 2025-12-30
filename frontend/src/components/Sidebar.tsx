@@ -1,9 +1,8 @@
-import { BarChart3, FilePlus, FileText, LayoutDashboard, LogOut, Package, Receipt, Settings, Truck, Users, Warehouse } from 'lucide-react';
+import { BarChart3, FilePlus, FileText, LayoutDashboard, LogOut, Package, Settings, Users } from 'lucide-react';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import logo from '../assets/logo_digitbill.png';
 import { useAuth } from '../context/AuthContext';
-
+import logo from '../assets/logo_digitbill.png';
 export const Sidebar: React.FC = () => {
     const location = useLocation();
     const { profile, signOut } = useAuth();
@@ -13,11 +12,11 @@ export const Sidebar: React.FC = () => {
 
     return (
         <aside className="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col">
-            <div className="p-6 flex items-center justify-center overflow-hidden text-center">
-                <img src={logo} alt="DigitBill Logo" className="w-full h-auto max-w-[180px] scale-150" />
+            <div className="p-6 flex items-center justify-center overflow-hidden">
+               <img src={logo} alt="DigitBill Logo" className="w-full h-auto max-w-[180px] scale-150" />
             </div>
 
-            <nav className="flex-1 px-4 space-y-2 mt-4 overflow-y-auto">
+            <nav className="flex-1 px-4 space-y-2 mt-4">
                 <Link
                     to="/dashboard"
                     className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive('/dashboard')
@@ -63,39 +62,6 @@ export const Sidebar: React.FC = () => {
                 </Link>
 
                 <Link
-                    to="/providers"
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive('/providers')
-                        ? 'bg-blue-50 text-blue-600 shadow-sm'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                        }`}
-                >
-                    <Truck size={20} className={isActive('/providers') ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'} />
-                    <span className="font-medium">Proveedores</span>
-                </Link>
-
-                <Link
-                    to="/inventory"
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive('/inventory')
-                        ? 'bg-blue-50 text-blue-600 shadow-sm'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                        }`}
-                >
-                    <Warehouse size={20} className={isActive('/inventory') ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'} />
-                    <span className="font-medium">Inventario</span>
-                </Link>
-
-                <Link
-                    to="/expenses"
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive('/expenses')
-                        ? 'bg-blue-50 text-blue-600 shadow-sm'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                        }`}
-                >
-                    <Receipt size={20} className={isActive('/expenses') ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'} />
-                    <span className="font-medium">Gastos</span>
-                </Link>
-
-                <Link
                     to="/products"
                     className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive('/products')
                         ? 'bg-blue-50 text-blue-600 shadow-sm'
@@ -120,7 +86,7 @@ export const Sidebar: React.FC = () => {
                 )}
 
                 {role === 'admin' && (
-                    <div className="pt-4 mt-4 border-t border-gray-100">
+                        <div className="pt-4 mt-4 border-t border-gray-100">
                         <Link
                             to="/settings"
                             className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group"
@@ -133,7 +99,7 @@ export const Sidebar: React.FC = () => {
             </nav>
 
             <div className="p-4 border-t border-gray-100">
-                <button
+                <button 
                     onClick={signOut}
                     className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-red-600 hover:bg-red-50 transition-all duration-200"
                 >

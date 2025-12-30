@@ -1,5 +1,5 @@
-import { AlertCircle, ArrowRight, FileText, Package, Plus, TrendingUp, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { FileText, TrendingUp, Users, AlertCircle, Plus, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import axios from '../api';
 
@@ -8,9 +8,8 @@ export const Dashboard = () => {
     const [stats, setStats] = useState({
         totalRevenue: 0,
         invoiceCount: 0,
-        totalAR: 0,
-        clientCount: 0,
-        stockAlerts: 0
+        pendingCount: 0,
+        clientCount: 0
     });
     const [recentInvoices, setRecentInvoices] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -20,32 +19,25 @@ export const Dashboard = () => {
             try {
                 // In a real app, we'd have a dedicated /stats endpoint.
                 // For now, we'll fetch all invoices and clients to calculate.
-                const [invoicesRes, clientsRes, alertsRes] = await Promise.all([
+                const [invoicesRes, clientsRes] = await Promise.all([
                     axios.get('/api/invoices'),
-                    axios.get('/api/clients'),
-                    axios.get('/api/inventory/alerts')
+                    axios.get('/api/clients')
                 ]);
 
                 const invoices = invoicesRes.data;
                 const clients = clientsRes.data;
-                const alerts = alertsRes.data;
 
                 const revenue = invoices
-                    .filter((i: any) => i.status !== 'draft')
-                    .reduce((acc: number, curr: any) => acc + (curr.total_paid ? parseFloat(curr.total_paid) : 0), 0);
-
-                const totalInvoiced = invoices
-                    .filter((i: any) => i.status !== 'draft')
+                    .filter((i: any) => i.status === 'signed' || i.status === 'sent')
                     .reduce((acc: number, curr: any) => acc + parseFloat(curr.total), 0);
 
-                const totalAR = totalInvoiced - revenue;
+                const pending = invoices.filter((i: any) => i.status === 'draft').length;
 
                 setStats({
                     totalRevenue: revenue,
                     invoiceCount: invoices.length,
-                    totalAR: totalAR,
-                    clientCount: clients.length,
-                    stockAlerts: alerts.length
+                    pendingCount: pending,
+                    clientCount: clients.length
                 });
 
                 setRecentInvoices(invoices.slice(0, 5));
@@ -105,29 +97,24 @@ export const Dashboard = () => {
                     <h3 className="text-2xl font-bold text-gray-900 mt-1">{stats.invoiceCount}</h3>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm border-l-4 border-l-red-500">
+                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
-                        <div className="bg-red-50 p-3 rounded-xl text-red-600">
+                        <div className="bg-orange-50 p-3 rounded-xl text-orange-600">
                             <AlertCircle size={24} />
                         </div>
                     </div>
-                    <p className="text-gray-500 text-sm font-medium">Total por Cobrar</p>
-                    <h3 className="text-2xl font-bold text-gray-900 mt-1">
-                        RD$ {stats.totalAR.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
-                    </h3>
+                    <p className="text-gray-500 text-sm font-medium">Borradores Pendientes</p>
+                    <h3 className="text-2xl font-bold text-gray-900 mt-1">{stats.pendingCount}</h3>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm border-l-4 border-l-orange-500">
+                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
-                        <div className="bg-orange-50 p-3 rounded-xl text-orange-600">
-                            <Package size={24} />
+                        <div className="bg-purple-50 p-3 rounded-xl text-purple-600">
+                            <Users size={24} />
                         </div>
-                        {stats.stockAlerts > 0 && (
-                            <span className="flex h-2 w-2 rounded-full bg-orange-500 animate-pulse"></span>
-                        )}
                     </div>
-                    <p className="text-gray-500 text-sm font-medium">Alertas de Stock</p>
-                    <h3 className="text-2xl font-bold text-gray-900 mt-1">{stats.stockAlerts}</h3>
+                    <p className="text-gray-500 text-sm font-medium">Clientes Activos</p>
+                    <h3 className="text-2xl font-bold text-gray-900 mt-1">{stats.clientCount}</h3>
                 </div>
             </div>
 
@@ -156,10 +143,11 @@ export const Dashboard = () => {
                                     <td className="px-6 py-4 text-gray-500">{new Date(inv.created_at).toLocaleDateString()}</td>
                                     <td className="px-6 py-4 font-medium text-gray-900">RD$ {parseFloat(inv.total).toLocaleString()}</td>
                                     <td className="px-6 py-4">
-                                        <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${inv.status === 'sent' ? 'bg-green-100 text-green-700' :
+                                        <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                                            inv.status === 'sent' ? 'bg-green-100 text-green-700' :
                                             inv.status === 'signed' ? 'bg-blue-50 text-blue-700' :
-                                                'bg-gray-100 text-gray-700'
-                                            }`}>
+                                            'bg-gray-100 text-gray-700'
+                                        }`}>
                                             {inv.status}
                                         </span>
                                     </td>

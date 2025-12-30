@@ -17,9 +17,12 @@ export const InvoiceForm: React.FC = () => {
 =======
     const [clients, setClients] = React.useState<Array<{ id: number, name: string }>>([]);
     const [products, setProducts] = React.useState<Array<{ id: number, sku: string, description: string, unit_price: string }>>([]);
+<<<<<<< HEAD
     const [isElectronic, setIsElectronic] = React.useState(false);
     const [isSubmitting, setIsSubmitting] = React.useState(false);
 >>>>>>> e13c1c56369376f9cf75487492a8655b0820a6ba
+=======
+>>>>>>> parent of 0e146c6 (New modules)
 
     const { register, control, handleSubmit, watch, setValue } = useForm<InvoiceFormData>({
         defaultValues: {
@@ -33,6 +36,7 @@ export const InvoiceForm: React.FC = () => {
         const fetchData = async () => {
             try {
 <<<<<<< HEAD
+<<<<<<< HEAD
                 const [clientsData, productsData] = await Promise.all([
                     getClients(),
                     getProducts()
@@ -41,14 +45,19 @@ export const InvoiceForm: React.FC = () => {
                 setProducts(productsData);
 =======
                 const [clientsRes, productsRes, configRes] = await Promise.all([
+=======
+                const [clientsRes, productsRes] = await Promise.all([
+>>>>>>> parent of 0e146c6 (New modules)
                     api.get('/api/clients'),
-                    api.get('/api/products'),
-                    api.get('/api/settings/company')
+                    api.get('/api/products')
                 ]);
                 setClients(clientsRes.data);
                 setProducts(productsRes.data);
+<<<<<<< HEAD
                 setIsElectronic(configRes.data.electronic_invoicing);
 >>>>>>> e13c1c56369376f9cf75487492a8655b0820a6ba
+=======
+>>>>>>> parent of 0e146c6 (New modules)
             } catch (err) {
                 console.error('Error fetching data', err);
             }
@@ -67,20 +76,22 @@ export const InvoiceForm: React.FC = () => {
         name: "items"
     });
 
-    const onSubmit = async (data: InvoiceFormData, immediate: boolean = false) => {
-        setIsSubmitting(true);
+    const onSubmit = async (data: InvoiceFormData) => {
         try {
+<<<<<<< HEAD
             const response = await api.post('/api/invoices', { ...data, immediate_issue: immediate });
             if (response.data.error) {
                 alert(response.data.error);
             }
             navigate('/invoices');
 >>>>>>> e13c1c56369376f9cf75487492a8655b0820a6ba
+=======
+            await api.post('/api/invoices', data);
+            navigate('/');
+>>>>>>> parent of 0e146c6 (New modules)
         } catch (err) {
             console.error(err);
             alert('Error creating invoice');
-        } finally {
-            setIsSubmitting(false);
         }
     };
 
@@ -99,6 +110,7 @@ export const InvoiceForm: React.FC = () => {
                 <p className="text-gray-500 mt-1">Crea un nuevo comprobante fiscal</p>
             </div>
 
+<<<<<<< HEAD
 <<<<<<< HEAD
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 <InvoiceGeneralInfo 
@@ -122,6 +134,9 @@ export const InvoiceForm: React.FC = () => {
                 />
 =======
             <form onSubmit={handleSubmit((data) => onSubmit(data, false))} className="space-y-6">
+=======
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+>>>>>>> parent of 0e146c6 (New modules)
                 {/* Client & Type Section */}
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
                     <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
@@ -152,7 +167,7 @@ export const InvoiceForm: React.FC = () => {
                             </div>
                         </div>
 
-                        <div>
+                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1.5">Tipo de Comprobante</label>
                             <select
                                 {...register('type_code')}
@@ -288,24 +303,12 @@ export const InvoiceForm: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="flex gap-3 mt-6">
-                            <button
-                                type="button"
-                                onClick={() => handleSubmit((data) => onSubmit(data, false))()}
-                                disabled={isSubmitting}
-                                className="flex-1 bg-white border border-gray-300 text-gray-700 font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-50 transition-all disabled:opacity-50"
-                            >
-                                <Save size={20} /> Borrador
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => handleSubmit((data) => onSubmit(data, true))()}
-                                disabled={isSubmitting}
-                                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
-                            >
-                                <Save size={20} /> {isElectronic ? 'Emitir y Firmar' : 'Emitir Factura'}
-                            </button>
-                        </div>
+                        <button
+                            type="submit"
+                            className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+                        >
+                            <Save size={20} /> Guardar Factura
+                        </button>
                     </div>
                 </div>
 >>>>>>> e13c1c56369376f9cf75487492a8655b0820a6ba

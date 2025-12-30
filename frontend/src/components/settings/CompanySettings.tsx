@@ -40,6 +40,7 @@ export const CompanySettings: React.FC<CompanySettingsProps> = ({ defaultValues,
                     <input {...register('address')} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
                 </div>
 <<<<<<< HEAD
+<<<<<<< HEAD
                 <div className="pt-4 border-t md:col-span-2">
                     <h3 className="text-lg font-semibold text-gray-800 mb-4">Certificado Digital (Firma Electrónica)</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -71,6 +72,8 @@ export const CompanySettings: React.FC<CompanySettingsProps> = ({ defaultValues,
                     </label>
 >>>>>>> e13c1c56369376f9cf75487492a8655b0820a6ba
                 </div>
+=======
+>>>>>>> parent of 0e146c6 (New modules)
             </div>
             <div className="flex justify-end pt-4 border-t">
                 <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg flex items-center gap-2 font-medium transition-colors">
