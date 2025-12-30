@@ -1,51 +1,35 @@
+import { query } from "../db";
 
-import { query } from '../db';
-import dotenv from 'dotenv';
-import path from 'path';
+async function migrate() {
+  console.log(
+    "Migrating: Adding stock to products and creating inventory_movements table..."
+  );
+  await query(`
+        -- Add stock to products if not exists
+        DO $$ 
+        BEGIN 
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='products' AND column_name='stock') THEN
+                ALTER TABLE products ADD COLUMN stock DECIMAL(12, 2) DEFAULT 0;
+            END IF;
+        END $$;
 
-// Load env vars from backend root
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+        CREATE TABLE IF NOT EXISTS inventory_movements (
+            id SERIAL PRIMARY KEY,
+            tenant_id INTEGER REFERENCES tenants(id) NOT NULL,
+            product_id INTEGER REFERENCES products(id) NOT NULL,
+            type VARCHAR(20) NOT NULL, -- 'in', 'out', 'adjustment'
+            quantity DECIMAL(12, 2) NOT NULL,
+            reference_id INTEGER, -- invoice_id or expense_id
+            reason VARCHAR(255), -- 'Sale', 'Purchase', 'Correction', etc.
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    `);
+  console.log("Migration completed successfully.");
+}
 
-const migrate = async () => {
-    try {
-        console.log('Starting migration...');
-        
-        // Add columns if they don't exist
-        await query(`
-            DO $$ 
-            BEGIN 
-                BEGIN
-                    ALTER TABLE products ADD COLUMN type VARCHAR(20) CHECK (type IN ('product', 'service')) DEFAULT 'product';
-                EXCEPTION
-                    WHEN duplicate_column THEN NULL;
-                END;
-                
-                BEGIN
-                    ALTER TABLE products ADD COLUMN cost DECIMAL(12, 2) DEFAULT 0.00;
-                EXCEPTION
-                    WHEN duplicate_column THEN NULL;
-                END;
-
-                BEGIN
-                    ALTER TABLE products ADD COLUMN stock_quantity INTEGER DEFAULT 0;
-                EXCEPTION
-                    WHEN duplicate_column THEN NULL;
-                END;
-
-                BEGIN
-                    ALTER TABLE products ADD COLUMN category VARCHAR(50);
-                EXCEPTION
-                    WHEN duplicate_column THEN NULL;
-                END;
-            END $$;
-        `);
-
-        console.log('Migration completed successfully.');
-        process.exit(0);
-    } catch (error) {
-        console.error('Migration failed:', error);
-        process.exit(1);
-    }
-};
-
-migrate();
+migrate()
+  .then(() => process.exit())
+  .catch((err) => {
+    console.error("Migration failed:", err);
+    process.exit(1);
+  });

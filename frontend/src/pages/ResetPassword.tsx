@@ -1,44 +1,34 @@
-import { ArrowRight, KeyRound, Loader, Lock, Mail, ShieldCheck } from 'lucide-react';
-import { useEffect, useState, type FormEvent } from 'react';
+import { ArrowRight, KeyRound, Loader, Lock, ShieldCheck } from 'lucide-react';
+import { useState, type FormEvent } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
-
-export const Login = () => {
-    const navigate = useNavigate();
-    const { needsMFA, session } = useAuth();
-    const [email, setEmail] = useState('');
+export const ResetPassword = () => {
+    // const { needsMFA } = useAuth(); // Removed as per instruction
+    // const [email, setEmail] = useState(''); // Removed as per instruction
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [verifyCode, setVerifyCode] = useState('');
-    const [showMFA, setShowMFA] = useState(false);
+    const [showMFA] = useState(false);
 
-    useEffect(() => {
-        if (session) {
-            navigate('/dashboard');
-        }
-        if (needsMFA) {
-            setShowMFA(true);
-        }
-    }, [needsMFA]);
-
-    const handleLogin = async (e: FormEvent) => {
+    const navigate = useNavigate();
+    const handleResetPassword = async (e: FormEvent) => {
         e.preventDefault();
         setLoading(true);
-
+        if (password !== confirmPassword) {
+            toast.error('Las contraseñas no coinciden');
+            return;
+        }
         try {
-            const { error } = await supabase.auth.signInWithPassword({
-                email,
+            const { error } = await supabase.auth.updateUser({
                 password,
             });
 
             if (error) {
-                toast.error(error.message === 'Invalid login credentials'
-                    ? 'Credenciales incorrectas'
-                    : 'Error al iniciar sesión');
+                toast.error(error.message);
             } else {
-                toast.success('¡Bienvenido!');
+                toast.success('¡Contraseña restablecida!');
                 navigate('/dashboard');
                 // AuthContext will handle state change to needsMFA if required
             }
@@ -95,26 +85,11 @@ export const Login = () => {
                     {!showMFA ? (
                         <>
                             <div className="text-center mb-8">
-                                <h2 className="text-3xl font-bold text-gray-900">Bienvenido de nuevo</h2>
-                                <p className="text-gray-500 mt-2">Ingresa a tu cuenta para gestionar tu facturación.</p>
+                                <h2 className="text-3xl font-bold text-gray-900">Restablecer Contraseña</h2>
+                                <p className="text-gray-500 mt-2">Ingresa tu correo electrónico para restablecer tu contraseña.</p>
                             </div>
 
-                            <form onSubmit={handleLogin} className="space-y-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Correo Electrónico</label>
-                                    <div className="relative">
-                                        <Mail className="absolute left-3 top-3 text-gray-400" size={20} />
-                                        <input
-                                            type="email"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                                            placeholder="tu@empresa.com"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
+                            <form onSubmit={handleResetPassword} className="space-y-6">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
                                     <div className="relative">
@@ -123,6 +98,20 @@ export const Login = () => {
                                             type="password"
                                             value={password}
                                             onChange={(e) => setPassword(e.target.value)}
+                                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                            placeholder="••••••••"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Confirmar Contraseña</label>
+                                    <div className="relative">
+                                        <Lock className="absolute left-3 top-3 text-gray-400" size={20} />
+                                        <input
+                                            type="password"
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
                                             className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                                             placeholder="••••••••"
                                             required

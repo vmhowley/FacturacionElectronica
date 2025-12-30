@@ -1,4 +1,4 @@
-import { Edit, Plus, Trash2, User } from 'lucide-react';
+import { Edit, FileText, Plus, Trash2, User } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
@@ -113,6 +113,13 @@ export const ClientList: React.FC = () => {
                                         </td>
                                         <td className="py-4 px-6 text-right">
                                             <div className="flex justify-end gap-2">
+                                                <Link
+                                                    to={`/clients/${client.id}/statement`}
+                                                    className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all"
+                                                    title="Estado de Cuenta"
+                                                >
+                                                    <FileText size={18} />
+                                                </Link>
                                                 <Link
                                                     to={`/clients/edit/${client.id}`}
                                                     className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
