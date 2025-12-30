@@ -161,8 +161,17 @@ router.post('/:id/sign', async (req, res) => {
     const xml = buildECFXML(xmlData as any); // Cast for now
     
     // Sign
-    const { loadP12, signXml } = require('../services/signatureService');
-    const { privateKeyPem, certPem } = loadP12(config.certificate_path, config.certificate_password);
+    const { loadP12, loadP12FromBuffer, signXml } = require('../services/signatureService');
+    
+    let keyPair;
+    if (config.certificate_content) {
+      const buffer = Buffer.from(config.certificate_content, 'base64');
+      keyPair = loadP12FromBuffer(buffer, config.certificate_password);
+    } else {
+      keyPair = loadP12(config.certificate_path, config.certificate_password);
+    }
+
+    const { privateKeyPem, certPem } = keyPair;
     const signedXml = signXml(xml, privateKeyPem, certPem);
     
     // Update status and save XML content

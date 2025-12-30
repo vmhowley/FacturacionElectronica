@@ -13,6 +13,7 @@ import { Pricing } from './pages/Pricing';
 import { Reports } from './pages/Reports';
 import { Settings } from './pages/Settings';
 import { Dashboard } from './pages/Dashboard';
+import { UpdatePassword } from './pages/UpdatePassword';
 
 import { ClientForm } from './components/ClientForm';
 import { ClientList } from './components/ClientList';
@@ -66,6 +67,7 @@ function AppRoutes() {
       <Route path="/pricing" element={<PublicRoute><Pricing /></PublicRoute>} />
       
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+      <Route path="/update-password" element={<UpdatePassword />} />
 
 
       {/* Protected Dashboard Routes - Now prefixed with /dashboard or accessible via specific paths */}

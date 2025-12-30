@@ -1,5 +1,6 @@
 import type { Session, User } from '@supabase/supabase-js';
 import { createContext, useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import axios from '../api';
 
@@ -37,6 +38,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [needsMFA, setNeedsMFA] = useState(false);
+    const navigate = useNavigate();
 
     const checkMFA = async (currentSession: Session | null) => {
         if (!currentSession) {
@@ -133,6 +135,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             }
             
             if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                 console.log(`Auth Event: ${event}`, session?.user?.email);
                  setSession(session);
                  setUser(session?.user ?? null);
                  
@@ -141,6 +144,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                      checkMFA(session);
                  }
                  if (mounted) setLoading(false);
+            }
+
+            if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && window.location.hash.includes('type=invite'))) {
+                console.log("Detected invitation or recovery hash, redirecting to /update-password");
+                navigate('/update-password');
             }
         });
 

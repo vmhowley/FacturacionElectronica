@@ -39,10 +39,33 @@ export const Settings: React.FC = () => {
 
     const onUpdateCompany = async (data: any) => {
         try {
-            await axios.put('/api/settings/company', data);
+            // 1. Update basic company info
+            await axios.put('/api/settings/company', {
+                name: data.name,
+                address: data.address,
+                phone: data.phone,
+                email: data.email
+            });
+
+            // 2. If certificate file or password is provided, upload it
+            if ((data.certificate && data.certificate.length > 0) || data.certificate_password) {
+                const formData = new FormData();
+                if (data.certificate && data.certificate[0]) {
+                    formData.append('certificate', data.certificate[0]);
+                }
+                if (data.certificate_password) {
+                    formData.append('password', data.certificate_password);
+                }
+                
+                await axios.post('/api/settings/certificate', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+            }
+
             toast.success('Información actualizada');
             fetchAllData();
         } catch (err) {
+            console.error(err);
             toast.error('Error al guardar');
         }
     };

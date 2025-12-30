@@ -10,14 +10,17 @@ const api = axios.create({
 api.interceptors.request.use(async (config) => {
   loaderService.show();
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error) {
+        console.warn('API Interceptor: getSession error:', error.message);
+    }
     if (session?.access_token) {
       config.headers.Authorization = `Bearer ${session.access_token}`;
     }
     return config;
-  } catch (error) {
-    loaderService.hide();
-    throw error;
+  } catch (error: any) {
+    console.warn('API Interceptor: getSession exception:', error.message);
+    return config; // Continue without token if session fails
   }
 }, (error) => {
     loaderService.hide();

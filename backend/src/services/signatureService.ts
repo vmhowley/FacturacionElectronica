@@ -10,6 +10,11 @@ interface KeyPair {
 
 export const loadP12 = (p12Path: string, password: string): KeyPair => {
   const p12Der = fs.readFileSync(p12Path, 'binary');
+  return loadP12FromBuffer(p12Der, password);
+};
+
+export const loadP12FromBuffer = (buffer: Buffer | string, password: string): KeyPair => {
+  const p12Der = typeof buffer === 'string' ? buffer : buffer.toString('binary');
   const p12Asn1 = forge.asn1.fromDer(p12Der);
   const p12 = forge.pkcs12.pkcs12FromAsn1(p12Asn1, password);
   

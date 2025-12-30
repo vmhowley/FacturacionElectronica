@@ -6,6 +6,7 @@ interface CompanyConfig {
     company_rnc: string;
     certificate_path: string;
     certificate_password: string;
+    certificate_content?: string; // Base64 content from DB
 }
 
 export const getCompanyConfig = async (tenantId: number): Promise<CompanyConfig> => {
@@ -30,6 +31,9 @@ export const getCompanyConfig = async (tenantId: number): Promise<CompanyConfig>
         if (config.certificate_path === 'default' || !config.certificate_path) {
             config.certificate_path = defaults.certificate_path;
         }
+
+        // If certificate_content exists, we might want to use it instead of path.
+        // We'll return it so the service can decide.
 
         return { ...defaults, ...config };
     } catch (err) {

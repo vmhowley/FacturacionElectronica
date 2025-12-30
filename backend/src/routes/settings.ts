@@ -2,6 +2,9 @@ import { Router } from 'express';
 import { query } from '../db';
 import { requireAuth, requireRole } from '../middleware/auth';
 import { supabaseAdmin } from '../services/supabase';
+import multer from 'multer';
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 const router = Router();
 
@@ -86,6 +89,41 @@ router.put('/sequences/:id', async (req, res) => {
 });
 
 
+
+// POST /api/settings/certificate
+router.post('/certificate', upload.single('certificate'), async (req: any, res: any) => {
+    try {
+        const { password } = req.body;
+        const file = req.file;
+
+        if (password) {
+            await query(
+                'INSERT INTO company_settings (tenant_id, key, value) VALUES ($1, $2, $3) ON CONFLICT (tenant_id, key) DO UPDATE SET value = EXCLUDED.value',
+                [req.tenantId, 'certificate_password', password]
+            );
+        }
+
+        if (file) {
+            console.log(`Processing certificate file: ${file.originalname}, size: ${file.size}`);
+            const base64Content = file.buffer.toString('base64');
+            await query(
+                'INSERT INTO company_settings (tenant_id, key, value) VALUES ($1, $2, $3) ON CONFLICT (tenant_id, key) DO UPDATE SET value = EXCLUDED.value',
+                [req.tenantId, 'certificate_content', base64Content]
+            );
+            // Also store metadata in certificates table for reference
+            await query(
+                'INSERT INTO certificates (tenant_id, filename, path, type) VALUES ($1, $2, $3, $4)',
+                [req.tenantId, file.originalname, 'stored_in_db', file.mimetype]
+            );
+            console.log('Certificate content and metadata saved successfully');
+        }
+
+        res.json({ success: true, message: 'Certificado actualizado correctamente' });
+    } catch (err: any) {
+        console.error('Error in /certificate endpoint:', err.message, err.stack);
+        res.status(500).json({ error: 'Error al subir certificado', details: err.message });
+    }
+});
 
 // POST /api/settings/users/invite
 router.post('/users/invite', async (req, res) => {
