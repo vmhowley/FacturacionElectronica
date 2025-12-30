@@ -36,3 +36,4 @@
 {"error":{},"level":"error","message":"Error issuing invoice immediately","timestamp":"2025-12-30T16:03:51.208Z"}
 {"error":{},"level":"error","message":"Error generating NCF","tenantId":15,"timestamp":"2025-12-30T16:04:41.985Z","typeCode":"31"}
 {"error":{},"level":"error","message":"Error issuing invoice immediately","timestamp":"2025-12-30T16:04:41.988Z"}
+{"invoiceId":40,"level":"info","message":"Payment recorded","paymentId":1,"timestamp":"2025-12-30T16:16:06.162Z"}
